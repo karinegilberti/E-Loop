@@ -1,0 +1,139 @@
+body {
+   font-family: 'Poppins', sans-serif;
+  background: #5CE1E6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+    background: rgba(255, 255, 255, 0.95); 
+    padding: 50px 50px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    width: 600px;
+    text-align: center;
+}
+
+h2 {
+  color: #009b9e;
+  margin-bottom: 10px;
+}
+
+p {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  text-align: left;
+  font-weight: 500;
+  color: #444;
+  font-size: 14px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.btn-login {
+  background: #00c2c7;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+  margin-top: 8px; 
+}
+
+.btn-login:hover {
+  background: #009da1;
+}
+
+.opcoes {
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+.opcoes a {
+  color: #00c2c7;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* =========================
+   🔐 BOTÃO DE LOGIN
+========================= */
+
+#btnLogin {
+  width: 100%;
+  padding: 12px;
+  background: #2e7d32;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Hover só quando NÃO estiver carregando */
+#btnLogin:not(:disabled):hover {
+  background: #256628;
+  transform: scale(1.02);
+}
+
+/* Estado desabilitado / carregando */
+#btnLogin:disabled {
+  background: #9e9e9e;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 🌀 Spinner animado */
+#btnLogin.loading::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-left: 6px;
+}
+
+/* Animação de rotação */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 🎉 Sucesso (rápido destaque) */
+#btnLogin.sucesso {
+  background: #1e88e5;
+}
+
+/* ❌ Erro visual (caso queira ativar futuramente) */
+#btnLogin.erro {
+  background: #c62828;
+}

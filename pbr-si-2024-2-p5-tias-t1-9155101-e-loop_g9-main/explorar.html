@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Explorar | E-Loop</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- produtoCard deve carregar antes do explorar.js -->
+  <script src="produtoCard.js" defer></script>
+  <script src="explorar.js" defer></script>
+  <script src="carrinho-sync.js" defer></script>
+  <script src="js/busca-global.js"></script>
+  <script src="js/carrinho-api.js"></script>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="logo-search-group">
+      <img src="src/logo.png" alt="Logo E-Loop" class="logo-principal">
+
+      <div class="search">
+        <input type="text" id="campoBusca" placeholder="Buscar produtos...">
+        <button id="btnBuscar"><i class="fa fa-search"></i></button>
+      </div>
+    </div>
+
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="explorar.html" class="ativo">Explorar</a>
+      <a href="carrinho.html" class="carrinho-link">
+        <i class="fa fa-shopping-cart"></i> 
+        Carrinho <span id="contadorCarrinho">0</span>
+      </a>
+      <a href="anunciar.html">Anunciar</a>
+      <a href="minhaconta.html">Minha Conta</a>
+      <a href="sobre.html">Sobre</a>
+    </nav>
+  </header>
+
+  <!-- FILTROS -->
+    <form id="formFiltro">
+
+      <!-- Tipo -->
+      <div class="filtro-group">
+          <select id="filtroTipo">
+              <option value=""><i class="fas fa-tags"></i> Tipo</option>
+              <option value="roupas">Roupas</option>
+              <option value="livros">Livros</option>
+              <option value="vinil">Vinil</option>
+              <option value="cds">CDs</option>
+          </select>
+      </div>
+
+      <!-- Categoria -->
+      <div class="filtro-group">
+          <select id="filtroCategoria">
+            <option value="">Categoria</option>
+            <option value="1">Novo</option>
+            <option value="2">Usado</option>
+          </select>
+      </div>
+
+      <!-- Preço -->
+      <div class="filtro-group">
+          <select id="filtroPreco">
+            <option value="">Preço</option>
+            <option value="50">Até R$ 50</option>
+            <option value="100">R$ 50 - R$ 100</option>
+            <option value="300">R$ 100 - R$ 300</option>
+            <option value="301">Acima de R$ 300</option>
+          </select>
+      </div>
+
+      <!-- Condição -->
+      <div class="filtro-group">
+          <select id="filtroCondicao">
+            <option value="">Condição</option>
+            <option value="novo">Novo</option>
+            <option value="usado">Usado</option>
+          </select>
+      </div>
+
+      <div class="filtro-actions">
+          <button type="submit" class="btn-filtrar"><i class="fas fa-filter"></i></button>
+          <button type="button" id="limparFiltros" class="btn-limpar"><i class="fas fa-times"></i></button>
+      </div>
+
+    </form>
+
+  <!-- MENSAGEM QUANDO NÃO HÁ RESULTADOS -->
+  <div id="mensagemNenhum" style="display: none;" class="mensagem-nenhum">
+    <i class="fas fa-search"></i>
+    <h3>Nenhum anúncio encontrado</h3>
+    <p>Tente ajustar os filtros ou buscar por outros termos.</p>
+  </div>
+
+  <!-- PRODUTOS -->
+  <main class="container">
+    <section class="produtos">
+      <div class="grid-produtos" id="gridProdutos">
+        <!-- Anúncios serão carregados dinamicamente via JavaScript -->
+        <div class="carregando">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Carregando anúncios...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>&copy; 2025 E-Loop | Sustentabilidade em movimento</p>
+    <div class="social">
+      <i class="fab fa-instagram"></i>
+      <i class="fab fa-facebook"></i>
+      <i class="fab fa-whatsapp"></i>
+    </div>
+  </footer>
+
+</body>
+</html>

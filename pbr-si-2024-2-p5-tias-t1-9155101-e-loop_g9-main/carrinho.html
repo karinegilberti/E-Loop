@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrinho - E-Loop</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script src="carrinho.js" defer></script>
+  <script src="js/busca-global.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <img src="src/logo.png" alt="Logo E-Loop" class="logo-principal">
+    <div class="search">
+      <input type="text" placeholder="Buscar...">
+      <button><i class="fa fa-search"></i></button>
+    </div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="explorar.html">Explorar</a>
+       <a href="carrinho.html" class="carrinho-link">
+        <i class="fa fa-shopping-cart"></i> 
+        Carrinho <span id="contadorCarrinho">0</span>
+      </a>
+      <a href="anunciar.html">Anunciar</a>
+      <a href="minhaconta.html">Minha Conta</a>
+      <a href="sobre.html">Sobre</a>
+    </nav>
+  </header>
+
+  <!-- Conteúdo -->
+  <main class="container">
+    <h1>Carrinho</h1>
+
+    <div class="carrinho-box">
+      <table class="tabela-carrinho">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Tipo</th>
+            <th>Preço</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="listaCarrinho">
+          <!-- Produtos do carrinho aparecem aqui -->
+        </tbody>
+      </table>
+
+      <div class="resumo-carrinho">
+        <p>Subtotal <span id="subtotal">R$0,00</span></p>
+        <p>Taxas <span id="taxas">R$0,00</span></p>
+        <hr>
+        <p class="total">Total <span id="totalFinal">R$0,00</span></p>
+        <button id="btnFinalizar">Finalizar</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 E-Loop | Sustentabilidade em movimento ♻️</p>
+  </footer>
+</body>
+</html>

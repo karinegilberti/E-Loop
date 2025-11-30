@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anunciar Produto | E-Loop</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="anunciar.js" defer></script>
+  <script src="js/busca-global.js"></script>
+  <script src="carrinho-sync.js" defer></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <img src="src/logo.png" alt="Logo E-Loop" class="logo-principal">
+    <div class="search">
+      <input type="text" placeholder="Buscar...">
+      <button><i class="fa fa-search"></i></button>
+    </div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="explorar.html">Explorar</a>
+      <a href="carrinho.html" class="carrinho-link">
+        <i class="fa fa-shopping-cart"></i> 
+        Carrinho <span id="contadorCarrinho">0</span>
+      </a>
+      <a href="anunciar.html" class="ativo">Anunciar</a>
+      <a href="minhaconta.html">Minha Conta</a>
+      <a href="sobre.html">Sobre</a>
+    </nav>
+  </header>
+
+  <!-- Formulário de Anúncio -->
+  <main class="anunciar-container">
+    <h2>Anunciar</h2>
+    <p>Preencha as informações abaixo para divulgar seu item</p>
+
+    <form id="form-anuncio" class="form-anuncio" enctype="multipart/form-data">
+      <label for="nome_produto">Nome do Produto</label>
+      <input type="text" id="nome_produto" name="nome_produto" placeholder="Ex: Camisa de algodão orgânico" required>
+
+      <label for="tipo_anuncio">Tipo de anúncio</label>
+      <select id="tipo_anuncio" name="tipo_anuncio" required>
+        <option value="">Selecione...</option>
+        <option value="venda">Venda</option>
+        <option value="doacao">Doação</option>
+      </select>
+
+      <label for="categoria_id">Categoria</label>
+        <select id="categoria_id" name="categoria_id" required>
+          <option value="">Selecione...</option>
+          <option value="1">Roupas</option>
+          <option value="2">Livros</option>
+          <option value="3">Vinil</option>
+          <option value="4">CD</option>
+        </select>
+
+
+      <label for="preco">Preço</label>
+      <input type="number" id="preco" name="preco" step="0.01" placeholder="Ex: 50.00" required>
+
+      <label for="condicao">Condição do Produto</label>
+      <select id="condicao" name="condicao" required>
+        <option value="">Selecione...</option>
+        <option value="novo">Novo</option>
+        <option value="usado">Usado</option>
+      </select>
+
+      <label for="estado">Estado (UF)</label>
+      <select id="estado" name="estado" required>
+        <option value="">Selecione o estado...</option>
+      </select>
+
+      <label for="cidade">Cidade</label>
+      <select id="cidade" name="cidade" required>
+        <option value="">Selecione a cidade...</option>
+      </select>
+
+      <label for="descricao">Descrição</label>
+      <textarea id="descricao" name="descricao" rows="4" placeholder="Descreva seu produto..." required></textarea>
+
+      <label for="imagem">Imagem do Produto</label>
+      <input type="file" id="imagem" name="imagem" accept="image/*" required>
+
+      <div class="botoes-form">
+        <button type="submit" class="btn-enviar"><i class="fa fa-paper-plane"></i> Publicar</button>
+        <button type="reset" class="btn-limpar"><i class="fa fa-eraser"></i> Limpar</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 E-Loop | Sustentabilidade em movimento</p>
+    <div class="social">
+      <i class="fab fa-instagram"></i>
+      <i class="fab fa-facebook"></i>
+      <i class="fab fa-whatsapp"></i>
+    </div>
+  </footer>
+
+</body>
+</html>

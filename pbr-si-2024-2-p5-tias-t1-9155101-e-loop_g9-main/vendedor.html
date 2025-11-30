@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendedor | E-Loop</title>
+  <link rel="stylesheet" href="vendedor.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="vendedor.js" defer></script>
+  <script src="js/busca-global.js"></script>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <img src="src/logo.png" alt="Logo" class="logo-principal">
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="explorar.html">Explorar</a>
+      <a href="carrinho.html"><i class="fa fa-shopping-cart"></i> Carrinho <span id="contadorCarrinho">0</span></a>
+      <a href="anunciar.html">Anunciar</a>
+      <a href="minhaconta.html">Minha Conta</a>
+      <a href="sobre.html">Sobre</a>
+    </nav>
+  </header>
+
+  <main class="perfil-vendedor">
+
+    <section class="vendedor-header">
+      <img id="fotoVendedor" class="foto-vendedor" src="" alt="Foto">
+      <div>
+        <h1 id="nomeVendedor">Vendedor</h1>
+        <p id="cidadeVendedor">Cidade - Estado</p>
+        <p id="telefoneVendedor">Telefone: --</p>
+
+        <button id="btnWhatsapp" class="btn-whatsapp">
+          <i class="fa-brands fa-whatsapp"></i> Falar no WhatsApp
+        </button>
+      </div>
+    </section>
+
+    <section class="produtos-vendedor">
+      <h2>Produtos do vendedor</h2>
+      <div id="listaProdutosVendedor" class="grid-produtos"></div>
+    </section>
+
+    <section class="avaliacoes-vendedor">
+      <h2>Avaliações</h2>
+      <p><strong id="mediaAvaliacao">0.0</strong> ⭐ | <span id="totalAvaliacoes">0 avaliações</span></p>
+      <div id="listaAvaliacoes"></div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>E-Loop ♻ 2025</p>
+  </footer>
+
+</body>
+</html>

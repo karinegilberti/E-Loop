@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Livros</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="livros.css">
+  <script src="livros.js" defer></script>
+  <script src="carrinho-sync.js" defer></script>
+  <script src="js/busca-global.js"></script>
+  <script src="js/carrinho-api.js"></script>
+</head>
+<body>
+
+  <!-- ================================ NAVBAR ================================= -->
+  <header class="navbar">
+    <div class="logo-search-group">
+      <img src="src/logo.png" alt="Logo E-Loop" class="logo-principal">
+      <div class="search">
+        <input type="text" id="campoBusca" placeholder="Buscar...">
+        <button id="btnBuscar"><i class="fa fa-search"></i></button>
+      </div>
+    </div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="explorar.html" class="ativo">Explorar</a>
+      <a href="carrinho.html" class="carrinho-link">
+        <i class="fa fa-shopping-cart"></i> 
+        Carrinho <span id="contadorCarrinho">0</span>
+      </a>
+      <a href="anunciar.html">Anunciar</a>
+      <a href="minhaconta.html">Minha Conta</a>
+      <a href="sobre.html">Sobre</a>
+    </nav>
+  </header>
+
+  <h1>Livros</h1>
+
+  <!-- Grid de produtos (dinâmico) -->
+  <div class="produtos-grid" id="listaLivros"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 E-Loop | Todos os direitos reservados</p>
+    <div class="social">
+      <i class="fab fa-facebook-f"></i>
+      <i class="fab fa-twitter"></i>
+      <i class="fab fa-instagram"></i>
+    </div>
+  </footer>
+
+<!-- Modal de confirmação de carrinho -->
+<div id="modalCarrinho" style="display: none;">
+  <div class="modal-conteudo">
+    <span class="fechar-modal">&times;</span>
+    <p id="mensagemModal"></p>
+    <div class="modal-botoes">
+      <button id="btnContinuar">Continuar Comprando</button>
+      <button id="btnIrCarrinho">Ir para o Carrinho</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

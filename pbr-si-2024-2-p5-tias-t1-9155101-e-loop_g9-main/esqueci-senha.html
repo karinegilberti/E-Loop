@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recuperar / Redefinir Senha</title>
+  <link rel="stylesheet" href="esqueci-senha.css" />
+  <script defer src="esqueci-senha.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1 id="titulo">Recuperar Senha</h1>
+    <p id="descricao">Digite seu e-mail para receber o link.</p>
+
+    <!-- Formulário ENVIAR LINK -->
+    <form id="form-email">
+      <input type="email" id="email" placeholder="Seu e-mail" required />
+      <button type="submit" class="btn">Enviar link</button>
+    </form>
+
+    <!-- Formulário REDEFINIR SENHA -->
+    <form id="form-redefinir" class="hidden">
+      <input type="password" id="nova-senha" placeholder="Nova senha (mín. 8)" required minlength="8" />
+      <button type="submit" class="btn">Redefinir senha</button>
+    </form>
+
+    <p id="mensagem"></p>
+
+    <button id="btn-login" class="btn hidden" onclick="window.location.href='login.html'">
+      Ir para login
+    </button>
+  </div>
+</body>
+</html>

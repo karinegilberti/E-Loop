@@ -1,0 +1,279 @@
+/* Reset e base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.5;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #5CE1E6;
+  padding: 16px 28px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+}
+
+.logo-principal {
+  width: 90px;
+  height: auto;
+  cursor: pointer;
+}
+
+.logo-search-group {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 24px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-grow: 1;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.search button {
+  color: #222;
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: transparent;
+}
+
+.search button:hover {
+  color: #009da1;
+}
+
+.navbar nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.navbar nav a {
+  color: #fff;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.navbar nav a:hover,
+.navbar nav a.ativo {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Container geral */
+.container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Detalhes do produto */
+.detalhes-wrap {
+  display: flex;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+/* Galeria de fotos */
+.galeria {
+  flex: 1;
+  min-width: 300px;
+}
+
+.main-photo {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: visible; /* 👈 ALTERAÇÃO */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff; /* só para ficar bonito */
+  padding: 10px; /* impede que a imagem encoste na borda */
+}
+
+
+.main-photo img {
+  max-width: 100%;
+  max-height: 450px;
+  width: auto;
+  height: auto;
+  object-fit: contain; /* 👈 Mantém proporção sem cortar */
+  display: block;
+}
+
+
+.thumbs {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.thumbs img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border 0.3s;
+}
+
+.thumbs img.active,
+.thumbs img:hover {
+  border: 2px solid #5CE1E6;
+}
+
+/* Informações do produto */
+.info-produto {
+  flex: 1;
+  min-width: 300px;
+}
+
+.info-produto h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.preco-grande {
+  font-size: 24px;
+  color: black;
+  margin-bottom: 15px;
+}
+
+.descricao {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+/* Meta do produto */
+.meta-produto {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.meta-produto li {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Botões de ação */
+.acoes-produto {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: gray;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.btn:hover {
+  background-color: #5CE1E6;
+}
+
+.btn-primary {
+  background-color: #5CE1E6;
+}
+
+.btn-primary:hover {
+  background-color: #5CE1E6;
+}
+
+.btn-link {
+  background: none;
+  color: #2980b9;
+  font-size: 14px;
+  padding: 0;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Cartão do vendedor */
+.vendedor-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  background-color: #fff;
+}
+
+.vendedor-card h3 {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.vendedor-card p {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.vendedor-info {
+  font-style: italic;
+  color: #555;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: #fff;
+  margin-top: 50px;
+  border-top: 1px solid #ddd;
+  font-size: 14px;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .detalhes-wrap {
+    flex-direction: column;
+  }
+
+  .galeria, .info-produto {
+    min-width: 100%;
+  }
+
+  .thumbs {
+    justify-content: start;
+  }
+}

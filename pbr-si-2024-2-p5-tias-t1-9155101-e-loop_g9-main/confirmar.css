@@ -1,0 +1,65 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f7fefe;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.confirmar-container {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 380px;
+  text-align: center;
+}
+
+h2 {
+  color: #009b9e;
+  margin-bottom: 10px;
+}
+
+p {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.btn-confirmar {
+  width: 100%;
+  background: #00c2c7;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn-confirmar:hover {
+  background: #009da1;
+}
+
+.reenviar {
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+.reenviar a {
+  color: #00c2c7;
+  text-decoration: none;
+  font-weight: 600;
+}

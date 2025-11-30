@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vinil - E-Loop</title>
+  <link rel="stylesheet" href="vinil.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="vinil.js" defer></script>
+  <script src="carrinho-sync.js" defer></script>
+  <script src="js/busca-global.js"></script>
+  <script src="js/carrinho-api.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo-search-group">
+      <img src="src/logo.png" alt="Logo E-Loop" class="logo-principal">
+      <div class="search">
+        <input type="text" id="campoBusca" placeholder="Buscar...">
+        <button id="btnBuscar"><i class="fa fa-search"></i></button>
+      </div>
+    </div>
+
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="explorar.html" class="ativo">Explorar</a>
+      <a href="carrinho.html" class="carrinho-link">
+        <i class="fa fa-shopping-cart"></i> 
+        Carrinho <span id="contadorCarrinho">0</span>
+      </a>
+      <a href="anunciar.html">Anunciar</a>
+      <a href="minhaconta.html">Minha Conta</a>
+      <a href="sobre.html">Sobre</a>
+    </nav>
+  </header>
+
+  <!-- Conteúdo principal -->
+  <main class="container">
+    <h1>Vinis</h1>
+
+    <section class="produtos">
+      <div class="grid-index"></div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container-footer">
+      <p>&copy; 2025 E-Loop | Sustentabilidade em movimento ♻️</p>
+    </div>
+  </footer>
+  
+  <!-- MODAL DE CONFIRMAÇÃO -->
+  <div id="modalCarrinho" class="modal">
+    <div class="modal-content">
+      <span class="fechar-modal">&times;</span>
+      <h2 id="mensagemModal">Produto adicionado ao carrinho!</h2>
+      <div class="botoes-modal">
+        <button id="btnContinuar" class="btn">Continuar comprando</button>
+        <button id="btnIrCarrinho" class="btn btn-primary">Ir para o carrinho</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

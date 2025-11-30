@@ -1,0 +1,23 @@
+cff-version: 1.0.1
+message: Please cite this software using these metadata.
+title: E-Loop
+authors:
+  - family-names: Gilberti Felix
+    given-names: Karine Kessen
+  - family-names: Mendes Aguiar
+    given-names: Maria Heloisa
+  - family-names: Marques Camargo
+    given-names: Pablo
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Gomes Amaral
+    given-names: Cleia Marcia
+keywords:
+  - lixo eletrônico
+  - reciclagem
+  - sustentabilidade
+  - gestão de resíduos
+repository-code: https://github.com/ICEI-PUC-Minas-PBR-SI/pbr-si-2024-2-p5-tias-t1-9155101-e-loop_g9
+license: CC-BY-4.0
+version: 1.0.0
+date-released: 2024-11-24

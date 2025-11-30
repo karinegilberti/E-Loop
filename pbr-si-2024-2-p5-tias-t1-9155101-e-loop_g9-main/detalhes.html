@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Detalhes do Produto | E-Loop</title>
+  <link rel="stylesheet" href="detalhes.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="detalhes.js" defer></script>
+  <script src="carrinho-sync.js" defer></script>
+  <script src="js/carrinho-api.js"></script>
+  <script src="js/busca-global.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo-search-group">
+      <img src="src/logo.png" alt="Logo E-Loop" class="logo-principal">
+      <div class="search">
+        <input type="text" id="campoBusca" placeholder="Buscar...">
+        <button id="btnBuscar"><i class="fa fa-search"></i></button>
+      </div>
+    </div>
+    <nav>
+      <a href="index.html">Início</a>
+      <a href="explorar.html">Explorar</a>
+      <a href="carrinho.html" class="carrinho-link">
+        <i class="fa fa-shopping-cart"></i> 
+        Carrinho <span id="contadorCarrinho">0</span>
+      </a>
+      <a href="anunciar.html">Anunciar</a>
+      <a href="minhaconta.html">Minha Conta</a>
+      <a href="sobre.html">Sobre</a>
+    </nav>
+  </header>
+
+  <!-- Conteúdo -->
+  <main class="container">
+    <div class="detalhes-wrap">
+      
+      <!-- GALERIA -->
+      <section class="galeria">
+        <div class="main-photo">
+          <img id="mainPhoto" src="" alt="Foto do produto">
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+      </section>
+
+      <!-- INFORMAÇÕES -->
+      <section class="info-produto">
+        <h1 id="produtoNome">Produto</h1>
+        <p class="preco-grande" id="produtoPreco">R$ 0,00</p>
+        <p id="produtoDesc" class="descricao">Descrição do produto...</p>
+
+        <ul class="meta-produto">
+          <li><strong>Condição:</strong> <span id="produtoCondicao"></span></li>
+          <li><strong>Tamanho:</strong> <span id="produtoTamanho"></span></li>
+          <li><strong>Local:</strong> <span id="produtoCidade"></span></li>
+        </ul>
+
+        <div class="acoes-produto">
+          <button id="btnAddCarrinho" class="btn">Adicionar ao carrinho</button>
+          <button id="btnComprarAgora" class="btn btn-primary">Comprar agora</button>
+        </div>
+
+        <!-- CARD DO VENDEDOR -->
+        <div class="vendedor-card" id="vendedorCard">
+          <h3 id="vendedorNome">Vendedor</h3>
+          <p id="vendedorLocal"></p>
+          <p class="vendedor-info" id="vendedorInfo">Informações do vendedor...</p>
+
+          <!-- ⚠️ Removido href, JS controla -->
+          <button id="btnVerPerfil" class="btn btn-link" type="button">
+            Ver perfil do vendedor
+          </button>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 E-Loop | Sustentabilidade em movimento</p>
+  </footer>
+</body>
+</html>
