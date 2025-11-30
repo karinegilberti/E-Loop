@@ -1,6 +1,12 @@
 {
+  "name": "eloop",
+  "version": "1.0.0",
+  "main": "serverAPI.js",
   "dependencies": {
     "firebase": "^12.5.0",
     "nodemailer": "^7.0.10"
+  },
+  "scripts": {
+    "start": "node Backend/serverAPI.js"
   }
 }
