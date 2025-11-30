@@ -4,3 +4,7 @@
     "nodemailer": "^7.0.10"
   }
 }
+
+"scripts": {
+  "start": "node server.js"
+}
