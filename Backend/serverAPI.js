@@ -81,24 +81,27 @@ const upload = multer({ storage });
 // ============================
 // BANCO DE DADOS
 // ============================
-import mysql from 'mysql2/promise';
+let db;
 
-const connection = await mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT
-});
+(async () => {
+  try {
+    db = await mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      port: process.env.DB_PORT,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    });
 
-db.connect((err) => {
-  if (err) {
-    console.error("❌ Erro ao conectar ao banco:", err);
-    process.exit(1);
-  } else {
-    console.log("✅ Conectado ao banco MySQL com sucesso!");
+    console.log("✅ Conectado ao MySQL (Railway)");
+
+  } catch (err) {
+    console.error("❌ Erro ao conectar ao MySQL:", err);
   }
-});
+})();
 
 // ============================
 // ROTA TESTE
@@ -1067,5 +1070,5 @@ app.delete("/api/carrinho/:usuarioId", async (req, res) => {
 // ============================
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () =>
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`)
+  console.log(`🚀 Servidor rodando na porta ${PORT}`)
 );
