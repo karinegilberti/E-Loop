@@ -6,5 +6,5 @@
 }
 
 "scripts": {
-  "start": "node server.js"
+  "start": "node serverAPI.js"
 }
