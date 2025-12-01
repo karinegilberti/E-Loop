@@ -1,45 +1,47 @@
-// ===== PEGAR USUÁRIO LOGADO (agora com ID) =====
+// ===== PEGAR USUÁRIO LOGADO =====
 let usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
 if (!usuario) usuario = null;
 
-const API = "http://localhost:3001/api";
+// ===== URL DO BACKEND NO RAILWAY =====
+const API = "https://balanced-fascination.up.railway.app/api";
 
 /**
  * Inicializa os favoritos para qualquer container de produtos.
- * @param {string} containerSelector - Container que possui card + coração
  */
 async function inicializarFavoritos() {
-  // Se não está logado, não faz nada
   if (!usuario || !usuario.id) {
     console.warn("🔒 Favoritos desabilitado: usuário não logado");
     return;
   }
 
-  // Busca favoritos no banco
+  // Buscar favoritos do banco
   const favoritosDB = await obterFavoritosDB(usuario.id);
 
-  // Varre todos os corações
+  // Procurar todos os cards com coração
   document.querySelectorAll(".favorite-icon").forEach(fav => {
-    const idProduto = Number(fav.closest(".card").dataset.id);
+    const card = fav.closest(".card");
+    if (!card) return;
+
+    const idProduto = Number(card.dataset.id);
     const icon = fav.querySelector("i");
 
-    // Se está favoritado no banco, marca em vermelho
+    // Se estiver no banco → marca como ativo
     if (favoritosDB.includes(idProduto)) {
       icon.classList.add("active");
       icon.style.color = "red";
     }
 
-    // Clique no botão
+    // Clique para favoritar / desfavoritar
     fav.addEventListener("click", async (e) => {
-      e.stopPropagation(); // impede abrir detalhes do anúncio
+      e.stopPropagation();
 
       if (icon.classList.contains("active")) {
-        // 🔥 REMOVER do banco
+        // remover
         await removerFavoritoDB(usuario.id, idProduto);
         icon.classList.remove("active");
         icon.style.color = "";
       } else {
-        // 💾 SALVAR no banco
+        // adicionar
         await salvarFavoritoDB(usuario.id, idProduto);
         icon.classList.add("active");
         icon.style.color = "red";
@@ -48,15 +50,20 @@ async function inicializarFavoritos() {
   });
 }
 
+// ========================
+// FUNÇÕES DO BANCO (API)
+// ========================
 
-// ======== FUNÇÕES BANCO ========
 async function obterFavoritosDB(usuarioId) {
   try {
     const resp = await fetch(`${API}/favoritos/${usuarioId}`);
     const data = await resp.json();
-    if (!data.success) return [];
+
+    if (!data.success || !Array.isArray(data.favoritos)) return [];
+
     return data.favoritos.map(f => f.idAnuncio);
-  } catch {
+  } catch (err) {
+    console.error("Erro ao buscar favoritos:", err);
     return [];
   }
 }
@@ -77,11 +84,19 @@ async function removerFavoritoDB(usuarioId, anuncioId) {
   });
 }
 
+// ========================
+// INICIALIZAÇÃO
+// ========================
+
 document.addEventListener("DOMContentLoaded", () => {
+  // Primeiro: carrega os produtos
   carregarProdutos().then(() => {
+    // Depois inicializa contador e favoritos
     setTimeout(() => {
-      atualizarContadorCarrinho();
-      inicializarFavoritos("#listaProdutos"); // 👈 AGORA SIM!
-    }, 250); // tempo suficiente para renderizar os cards
+      if (typeof atualizarContadorCarrinho === "function") {
+        atualizarContadorCarrinho();
+      }
+      inicializarFavoritos();
+    }, 250);
   });
 });

@@ -1,7 +1,10 @@
 /* roupas.js — carregando roupas do banco + carrinho via API (MySQL) */
 
 document.addEventListener("DOMContentLoaded", () => {
-  const API_URL = "http://localhost:3001/api/anuncios/categoria/1"; // categoria 1 = Roupas?
+
+  // ========================= 🔗 API EM PRODUÇÃO (Railway) =========================
+  const BASE_URL = "https://balanced-fascination.up.railway.app";
+  const API_URL = `${BASE_URL}/api/anuncios/categoria/1`; // categoria 1 = roupas
   const container = document.querySelector(".grid-index");
 
   const contadorEl = document.getElementById("contadorCarrinho");
@@ -11,15 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnIrCarrinho = document.getElementById("btnIrCarrinho");
   const fecharModalSpan = document.querySelector(".fechar-modal");
 
-  // ========================= USUÁRIO LOGADO (só pra manter compat) =========================
+  // ========================= USUÁRIO LOGADO =========================
   let usuarioRaw = JSON.parse(localStorage.getItem("usuarioLogado"));
   let usuario = usuarioRaw && typeof usuarioRaw === "object" ? usuarioRaw : {};
-  if (!Array.isArray(usuario.favoritos)) {
-    usuario.favoritos = [];
-  }
+  if (!Array.isArray(usuario.favoritos)) usuario.favoritos = [];
   localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
 
-  // ========================= AUXILIARES =========================
+  // ========================= FUNÇÕES AUXILIARES =========================
   function formatarBRL(valor) {
     return `R$ ${Number(valor || 0).toFixed(2).replace(".", ",")}`;
   }
@@ -39,8 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function fecharModal() {
-    if (!modal) return;
-    modal.style.display = "none";
+    if (modal) modal.style.display = "none";
   }
 
   // ========================= CARREGAR ROUPAS =========================
@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ========================= GERAR CARDS =========================
   function mostrarCards(lista) {
     if (!container) return;
     container.innerHTML = "";
@@ -73,47 +74,49 @@ document.addEventListener("DOMContentLoaded", () => {
     lista.forEach(produto => {
       const imgPath = produto.imagem || null; // ex: /uploads/arquivo.jpg
       const imgUrl = imgPath
-        ? `http://localhost:3001${imgPath}`
+        ? `${BASE_URL}${imgPath}`
         : "src/sem-imagem.png";
 
       const precoFormatado = formatarBRL(produto.preco);
 
       container.innerHTML += `
-      <div class="card"
-           data-id="${produto.id}"
-           data-nome="${produto.nome_produto}"
-           data-preco="${produto.preco}"
-           data-descricao="${produto.descricao || ""}"
-           data-condicao="${produto.condicao || ""}"
-           data-imagem="${imgPath || ""}"
-           data-vendedor-id="${produto.usuario_id || ""}"
-           data-vendedor-nome="${produto.vendedor_nome || ""}"
-           data-vendedor-telefone="${produto.vendedor_telefone || ""}"
-           data-vendedor-cidade="${produto.vendedor_cidade || ""}">
-        <div class="img-box">
-          <img src="${imgUrl}" alt="${produto.nome_produto}">
-          <div class="favorite-icon"><i class="fa fa-heart"></i></div>
+        <div class="card"
+             data-id="${produto.id}"
+             data-nome="${produto.nome_produto}"
+             data-preco="${produto.preco}"
+             data-descricao="${produto.descricao || ""}"
+             data-condicao="${produto.condicao || ""}"
+             data-imagem="${imgPath || ""}"
+             data-vendedor-id="${produto.usuario_id || ""}"
+             data-vendedor-nome="${produto.vendedor_nome || ""}"
+             data-vendedor-telefone="${produto.vendedor_telefone || ""}"
+             data-vendedor-cidade="${produto.vendedor_cidade || ""}">
+          
+          <div class="img-box">
+            <img src="${imgUrl}" alt="${produto.nome_produto}">
+            <div class="favorite-icon"><i class="fa fa-heart"></i></div>
+          </div>
+
+          <h3>${produto.nome_produto}</h3>
+          <p class="preco">${precoFormatado}</p>
+          <button class="btn-adicionar">Comprar</button>
         </div>
-        <h3>${produto.nome_produto}</h3>
-        <p class="preco">${precoFormatado}</p>
-        <button class="btn-adicionar">Comprar</button>
-      </div>
-    `;
+      `;
     });
   }
 
   // ========================= EVENTOS INTERNOS =========================
   function inicializarEventos() {
-    // Favoritar (visual)
+
+    // ====== Favoritar (visual) ======
     document.querySelectorAll(".favorite-icon").forEach(icon => {
       icon.addEventListener("click", e => {
         e.stopPropagation();
         icon.classList.toggle("favorito");
-        // aqui você poderia salvar nos favoritos do usuário se quiser
       });
     });
 
-    // Comprar (Adicionar ao carrinho via API)
+    // ====== Adicionar ao carrinho ======
     document.querySelectorAll(".btn-adicionar").forEach(btn => {
       btn.addEventListener("click", async e => {
         e.stopPropagation();
@@ -121,28 +124,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!card) return;
 
         const produto = {
-          // IDs
           id: parseInt(card.dataset.id),
           anuncio_id: parseInt(card.dataset.id),
-
-          // Dados do produto
           nome: card.dataset.nome,
           nome_produto: card.dataset.nome,
           preco: parseFloat(card.dataset.preco),
           descricao: card.dataset.descricao || "",
           condicao: card.dataset.condicao || "",
-
-          // Imagem (somente caminho salvo no banco)
           imagem: card.dataset.imagem || null,
-
-          // Dados do vendedor
           usuario_id: parseInt(card.dataset.vendedorId) || null,
           vendedor_id: parseInt(card.dataset.vendedorId) || null,
           vendedor_nome: card.dataset.vendedorNome || "Vendedor",
           vendedor_telefone: card.dataset.vendedorTelefone || "",
           vendedor_cidade: card.dataset.vendedorCidade || "",
-
-          // Quantidade
           quantidade: 1
         };
 
@@ -151,23 +145,23 @@ document.addEventListener("DOMContentLoaded", () => {
           atualizarContador();
           abrirModal(`"${produto.nome_produto}" foi adicionado ao carrinho!`);
         } else {
-          console.error("adicionarAoCarrinho não encontrada. Inclua carrinho-api.js antes de roupas.js.");
-          alert("Erro ao adicionar ao carrinho (carrinho-api.js não carregado).");
+          alert("Erro: carrinho-api.js não carregado.");
         }
       });
     });
 
-    // Detalhes da roupa
+    // ====== Abrir detalhes ======
     document.querySelectorAll(".card").forEach(card => {
       card.addEventListener("click", e => {
-        // se clicou no botão ou no coração, não vai para detalhes
+
+        // Se clicou no botão ou coração → não abrir detalhes
         if (e.target.closest(".btn-adicionar") || e.target.closest(".favorite-icon")) return;
 
         const produtoDetalhes = {
           id: parseInt(card.dataset.id),
           nome_produto: card.dataset.nome,
           preco: parseFloat(card.dataset.preco),
-          imagem: card.dataset.imagem || null, // só o caminho (ex: /uploads/...)
+          imagem: card.dataset.imagem || null,
           descricao: card.dataset.descricao || "",
           condicao: card.dataset.condicao || "",
           vendedor_nome: card.dataset.vendedorNome || "",
@@ -185,9 +179,11 @@ document.addEventListener("DOMContentLoaded", () => {
   btnContinuar?.addEventListener("click", fecharModal);
   fecharModalSpan?.addEventListener("click", fecharModal);
   btnIrCarrinho?.addEventListener("click", () => (window.location.href = "carrinho.html"));
+
   window.addEventListener("click", e => { if (e.target === modal) fecharModal(); });
 
   // ========================= INICIAR =========================
   carregarRoupas();
   atualizarContador();
+
 });

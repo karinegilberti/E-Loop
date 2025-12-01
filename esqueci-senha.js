@@ -1,6 +1,8 @@
-// === URLs DO BACKEND ===
-const API_URL_RECUPERAR = "http://localhost:3001/api/recuperar-senha";
-const API_URL_REDEFINIR = "http://localhost:3001/api/redefinir-senha";
+// === URLs DO BACKEND (VERSÃO RAILWAY) ===
+const API_BASE = "https://balanced-fascination.up.railway.app";
+
+const API_URL_RECUPERAR = `${API_BASE}/api/recuperar-senha`;
+const API_URL_REDEFINIR = `${API_BASE}/api/redefinir-senha`;
 
 // === ELEMENTOS ===
 const formEmail = document.getElementById("form-email");

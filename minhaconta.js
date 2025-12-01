@@ -1,4 +1,9 @@
 /* =======================================================================
+   🔗 API DO RAILWAY (PRODUÇÃO)
+   ====================================================================== */
+const API_URL = "https://balanced-fascination.up.railway.app/api";
+
+/* =======================================================================
    VARIÁVEIS GLOBAIS
    ====================================================================== */
 let usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado")) || null;
@@ -11,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("🚀 Inicializando página Minha Conta...");
 
     if (!usuarioLogado || !usuarioLogado.id) {
-        console.warn("⚠️ Usuário não logado - redirecionando...");
         localStorage.removeItem("usuarioLogado");
         window.location.href = "login.html";
         return;
@@ -31,12 +35,10 @@ function configurarEventListeners() {
     const btnEditar = document.getElementById("btn-editar-perfil");
     const fechar = document.getElementById("fecharModal");
 
-    if (btnEditar) {
-        btnEditar.addEventListener("click", () => {
-            preencherModalPerfil();
-            modal.style.display = "flex";
-        });
-    }
+    if (btnEditar) btnEditar.addEventListener("click", () => {
+        preencherModalPerfil();
+        modal.style.display = "flex";
+    });
 
     if (fechar) fechar.addEventListener("click", () => modal.style.display = "none");
 
@@ -68,13 +70,10 @@ function configurarEventListeners() {
    ====================================================================== */
 async function carregarDadosUsuario() {
     try {
-        const response = await fetch(`http://localhost:3001/api/usuario/${usuarioLogado.id}`);
-
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        const response = await fetch(`${API_URL}/usuario/${usuarioLogado.id}`);
 
         const data = await response.json();
-
-        if (!data.success || !data.usuario) throw new Error("Usuário não encontrado");
+        if (!data.success) throw new Error("Usuário não encontrado");
 
         exibirDadosUsuario(data.usuario);
 
@@ -107,7 +106,7 @@ function exibirDadosUsuario(usuario) {
 }
 
 /* =======================================================================
-   PREENCHER MODAL
+   PREENCHER MODAL PERFIL
    ====================================================================== */
 function preencherModalPerfil() {
     document.getElementById("modalNome").value = usuarioLogado.nome;
@@ -130,20 +129,19 @@ async function salvarPerfil(event) {
     const bio = document.getElementById("modalBio").value;
 
     try {
-        const response = await fetch(`http://localhost:3001/api/usuario/${usuarioLogado.id}`, {
+        const response = await fetch(`${API_URL}/usuario/${usuarioLogado.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ nome, email, telefone, endereco, bio })
         });
 
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        if (!response.ok) throw new Error("Erro no servidor");
 
-        alert("✅ Perfil atualizado com sucesso!");
+        alert("✅ Perfil atualizado!");
         document.getElementById("modalEditarPerfil").style.display = "none";
         carregarDadosUsuario();
 
     } catch (error) {
-        console.error("❌ Erro ao salvar perfil:", error);
         alert("❌ Erro ao salvar perfil.");
     }
 }
@@ -152,61 +150,55 @@ async function salvarPerfil(event) {
    CARREGAR FAVORITOS
    ====================================================================== */
 async function carregarFavoritos() {
-  const container = document.getElementById("containerFavoritos");
-  const msgVazio = document.getElementById("mensagemFavoritosVazio");
+    const container = document.getElementById("containerFavoritos");
+    const msgVazio = document.getElementById("mensagemFavoritosVazio");
 
-  try {
-    const resp = await fetch(`http://localhost:3001/api/favoritos/${usuarioLogado.id}`);
-    if (!resp.ok) throw new Error("Erro ao buscar favoritos");
+    try {
+        const resp = await fetch(`${API_URL}/favoritos/${usuarioLogado.id}`);
+        const data = await resp.json();
 
-    const data = await resp.json();
-    const lista = data.favoritos || [];
+        const lista = data.favoritos || [];
 
-    if (!lista.length) {
-      msgVazio.style.display = "block";
-      return;
+        if (!lista.length) {
+            msgVazio.style.display = "block";
+            return;
+        }
+
+        msgVazio.style.display = "none";
+
+        const promessas = lista.map(f =>
+            fetch(`${API_URL}/anuncios/${f.idAnuncio}`).then(r => r.json())
+        );
+
+        const resultados = await Promise.all(promessas);
+
+        container.innerHTML = resultados.map(item => {
+            if (!item.success) return "";
+            const a = item.anuncio;
+
+            return `
+                <div class="card">
+                    <div class="img-box">
+                        <img src="${API_URL.replace('/api','')}${a.imagem}" onerror="this.src='src/placeholder.png'">
+                    </div>
+                    <h3>${a.nome_produto}</h3>
+                    <p class="preco">R$ ${parseFloat(a.preco).toFixed(2)}</p>
+                    <button onclick="location.href='detalhes.html?id=${a.id}'" class="btn-detalhes">Ver detalhes</button>
+                </div>
+            `;
+        }).join("");
+
+    } catch (error) {
+        console.error("Erro ao carregar favoritos:", error);
     }
-
-    msgVazio.style.display = "none";
-
-    // Buscar detalhes de cada anúncio favorito
-    const promessas = lista.map(f =>
-      fetch(`http://localhost:3001/api/anuncios/${f.idAnuncio}`).then(r => r.json())
-    );
-
-    const resultados = await Promise.all(promessas);
-
-    // Montar cards
-    container.innerHTML = resultados.map(item => {
-      if (!item.success || !item.anuncio) return "";
-      const a = item.anuncio;
-
-      return `
-        <div class="card">
-          <div class="img-box">
-            <img src="http://localhost:3001${a.imagem || ""}" onerror="this.src='src/placeholder.png'">
-          </div>
-          <h3>${a.nome_produto}</h3>
-          <p class="preco">R$ ${parseFloat(a.preco || 0).toFixed(2)}</p>
-          <button class="btn-detalhes" onclick="window.location.href='detalhes.html?id=${a.id}'">
-            Ver detalhes
-          </button>
-        </div>
-      `;
-    }).join("");
-
-  } catch (error) {
-    console.error("❌ Erro ao carregar favoritos:", error);
-  }
 }
 
-
 /* =======================================================================
-   CARREGAR ANÚNCIOS
+   CARREGAR MEUS ANÚNCIOS
    ====================================================================== */
 async function carregarMeusAnuncios() {
     try {
-        const response = await fetch(`http://localhost:3001/api/anuncios/user/${usuarioLogado.id}`);
+        const response = await fetch(`${API_URL}/anuncios/user/${usuarioLogado.id}`);
         const anuncios = await response.json();
 
         meusAnuncios = anuncios;
@@ -219,18 +211,16 @@ async function carregarMeusAnuncios() {
 }
 
 /* =======================================================================
-   EXIBIR LISTA
+   EXIBIR ANÚNCIOS
    ====================================================================== */
 function exibirMeusAnuncios(anuncios) {
     const container = document.getElementById("container-dos-anuncios");
 
-    if (!anuncios || !anuncios.length) {
+    if (!anuncios.length) {
         container.innerHTML = `
             <div class="sem-anuncios">
-                <h3>📭 Nenhum anúncio encontrado</h3>
-                <button onclick="location.href='anunciar.html'" class="btn-criar-anuncio">
-                    ➕ Criar Primeiro Anúncio
-                </button>
+                <h3>📭 Ainda sem anúncios</h3>
+                <button onclick="location.href='anunciar.html'" class="btn-criar-anuncio">Criar anúncio</button>
             </div>
         `;
         return;
@@ -239,11 +229,11 @@ function exibirMeusAnuncios(anuncios) {
     container.innerHTML = anuncios.map(anuncio => `
         <div class="card">
             <div class="img-box">
-                <img src="http://localhost:3001${anuncio.imagem || ''}" 
+                <img src="${API_URL.replace('/api','')}${anuncio.imagem}" 
                      onerror="this.src='https://picsum.photos/250/200?random=1'">
             </div>
             <h3>${anuncio.nome_produto}</h3>
-            <p class="preco">R$ ${parseFloat(anuncio.preco || 0).toFixed(2)}</p>
+            <p class="preco">R$ ${parseFloat(anuncio.preco).toFixed(2)}</p>
             <p class="descricao">${anuncio.descricao || "Sem descrição"}</p>
             <div class="card-actions">
                 <button onclick="abrirModalEditarAnuncio(${anuncio.id})" class="btn-editar">
@@ -261,56 +251,58 @@ function exibirMeusAnuncios(anuncios) {
    EXCLUIR ANÚNCIO
    ====================================================================== */
 async function excluirAnuncio(anuncioId) {
-    if (!confirm("❓ Tem certeza que deseja excluir este anúncio?")) return;
+    if (!confirm("Excluir este anúncio?")) return;
 
     try {
-        const response = await fetch(`http://localhost:3001/api/anuncios/${anuncioId}`, { method: "DELETE" });
+        const response = await fetch(`${API_URL}/anuncios/${anuncioId}`, {
+            method: "DELETE"
+        });
 
-        if (!response.ok) throw new Error("Erro ao excluir");
+        if (!response.ok) throw new Error();
 
-        alert("🗑️ Anúncio excluído com sucesso!");
+        alert("🗑️ Anúncio removido!");
         carregarMeusAnuncios();
 
     } catch (error) {
-        alert("❌ Erro ao excluir.");
+        alert("Erro ao excluir.");
     }
 }
 
 /* =======================================================================
-   FUNÇÕES QUE PRECISAM SER GLOBAIS (ACESSÍVEIS PELO HTML)
+   FUNÇÕES GLOBAIS
    ====================================================================== */
-
-// tornar disponível no HTML
 window.abrirModalEditarAnuncio = abrirModalEditarAnuncio;
 window.salvarEdicaoAnuncio = salvarEdicaoAnuncio;
 window.excluirAnuncio = excluirAnuncio;
 
 /* =======================================================================
-   ABRIR MODAL DE EDIÇÃO DE ANÚNCIO
+   ABRIR MODAL DE EDIÇÃO
    ====================================================================== */
 function abrirModalEditarAnuncio(id) {
     const anuncio = meusAnuncios.find(a => a.id === id);
-    if (!anuncio) return alert("❌ Erro ao carregar anúncio.");
+    if (!anuncio) return alert("Anúncio não encontrado.");
 
     document.getElementById("inputTituloAnuncio").value = anuncio.nome_produto;
     document.getElementById("inputPrecoAnuncio").value = anuncio.preco;
     document.getElementById("inputCondicaoAnuncio").value = anuncio.condicao;
     document.getElementById("inputDescricaoAnuncio").value = anuncio.descricao;
-    document.getElementById("previewImagemAnuncio").src = anuncio.imagem
-        ? `http://localhost:3001${anuncio.imagem}`
-        : "https://via.placeholder.com/150";
+    document.getElementById("previewImagemAnuncio").src =
+        `${API_URL.replace('/api','')}${anuncio.imagem}`;
 
     document.getElementById("modalEditarAnuncio").style.display = "flex";
     document.getElementById("formEditarAnuncio").setAttribute("data-id", id);
 }
 
 /* =======================================================================
-   SALVAR EDIÇÃO DE ANÚNCIO
+   SALVAR EDIÇÃO DO ANÚNCIO
    ====================================================================== */
 async function salvarEdicaoAnuncio(event) {
     event.preventDefault();
 
-    const anuncioId = document.getElementById("formEditarAnuncio").getAttribute("data-id");
+    const anuncioId = document
+        .getElementById("formEditarAnuncio")
+        .getAttribute("data-id");
+
     const nome_produto = document.getElementById("inputTituloAnuncio").value;
     const preco = document.getElementById("inputPrecoAnuncio").value;
     const condicao = document.getElementById("inputCondicaoAnuncio").value;
@@ -326,19 +318,19 @@ async function salvarEdicaoAnuncio(event) {
     if (file) body.append("imagem", file);
 
     try {
-        const resp = await fetch(`http://localhost:3001/api/anuncios/${anuncioId}`, {
+        const resp = await fetch(`${API_URL}/anuncios/${anuncioId}`, {
             method: "PUT",
             body
         });
 
-        if (!resp.ok) throw new Error("Erro HTTP");
+        if (!resp.ok) throw new Error();
 
-        alert("✏️ Anúncio atualizado com sucesso!");
+        alert("✏️ Anúncio atualizado!");
         document.getElementById("modalEditarAnuncio").style.display = "none";
         carregarMeusAnuncios();
 
     } catch (error) {
-        alert("❌ Erro ao salvar edição do anúncio.");
+        alert("Erro ao editar anúncio.");
     }
 }
 
@@ -346,7 +338,7 @@ async function salvarEdicaoAnuncio(event) {
    SAIR
    ====================================================================== */
 function sair() {
-    if (confirm("Tem certeza que deseja sair?")) {
+    if (confirm("Sair da conta?")) {
         localStorage.removeItem("usuarioLogado");
         window.location.href = "login.html";
     }

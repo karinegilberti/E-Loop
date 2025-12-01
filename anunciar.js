@@ -150,10 +150,11 @@ document.addEventListener("DOMContentLoaded", () => {
       submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Publicando...';
       submitBtn.disabled = true;
 
-      const response = await fetch("http://localhost:3001/api/anuncios", {
+      const response = await fetch("https://balanced-fascination.up.railway.app/api/anuncios", {
         method: "POST",
         body: formData
       });
+
 
       // Restaurar botão
       submitBtn.innerHTML = originalText;

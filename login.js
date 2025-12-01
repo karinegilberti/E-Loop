@@ -1,7 +1,10 @@
 // ===============================
-// 🔐 LOGIN DO USUÁRIO
+// 🔐 LOGIN DO USUÁRIO (PRODUÇÃO)
 // ===============================
-const API_URL = "http://localhost:3001/api";
+
+// 🔗 SUA API NO RAILWAY
+const API_URL = "https://balanced-fascination.up.railway.app/api";
+
 const formLogin = document.getElementById("formLogin");
 const btnLogin = document.getElementById("btnLogin");
 
@@ -16,13 +19,13 @@ formLogin.addEventListener("submit", async (e) => {
         return;
     }
 
-    // Evita múltiplos cliques
+    // 🔄 Evita múltiplos cliques
     btnLogin.disabled = true;
     btnLogin.textContent = "Entrando...";
-    btnLogin.classList.add("loading");   // <--- ATIVA SPINNER
+    btnLogin.classList.add("loading");
 
     try {
-        console.log("📡 Enviando para API...");
+        console.log("📡 Enviando dados para API...");
 
         const response = await fetch(`${API_URL}/login`, {
             method: "POST",
@@ -31,41 +34,38 @@ formLogin.addEventListener("submit", async (e) => {
         });
 
         const data = await response.json();
-        console.log("📥 Resposta:", data);
+        console.log("📥 Resposta da API:", data);
 
-        // 🔎 Tratamento de erros
+        // ❌ ERROS
         if (!data.success) {
             if (response.status === 401) {
                 alert("❌ Usuário ou senha incorretos!");
             } else if (response.status === 404) {
                 alert("❌ Usuário não encontrado!");
             } else {
-                alert(data.message || "⚠️ Erro ao realizar login.");
+                alert(data.message || "⚠️ Erro ao fazer login.");
             }
             return;
         }
 
-        // 🎉 LOGIN OK
-        alert(`👋 Bem-vindo(a) de volta, ${data.usuario.nome}!`);
+        // 🎉 LOGIN CORRETO
+        alert(`👋 Bem-vindo(a), ${data.usuario.nome}!`);
 
-        // ===============================
-        // 🔐 AQUI está o código que você pediu:
-        // ===============================
-        if (data.success && data.usuario) {
-            localStorage.setItem("usuarioLogado", JSON.stringify({
-                id: data.usuario.id,
-                nome: data.usuario.nome,
-                email: data.usuario.email,
-                tipo: data.usuario.tipo_usuario
-            }));
+        // 🔐 Salvar usuário no localStorage
+        localStorage.setItem("usuarioLogado", JSON.stringify({
+            id: data.usuario.id,
+            nome: data.usuario.nome,
+            email: data.usuario.email,
+            tipo: data.usuario.tipo_usuario
+        }));
 
-            window.location.href = "index.html"; // <<--- SEU REDIRECIONAMENTO
-            return; // garante que nada após isso execute
-        }
+        // 🚀 Redirecionar para homepage
+        window.location.href = "index.html";
+        return;
 
     } catch (error) {
         console.error("❌ Erro de conexão:", error);
-        alert("⚠️ Erro ao conectar com servidor. A API está rodando?");
+        alert("⚠️ Erro ao conectar com o servidor. A API está ativa no Railway?");
     } finally {
         btnLogin.disabled = false;
         btnLogin.textContent = "Entrar";
@@ -75,7 +75,7 @@ formLogin.addEventListener("submit", async (e) => {
 
 
 // ===============================
-// 🚪 CARREGAMENTO DA PÁGINA
+// 🚪 AO CARREGAR A PÁGINA
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
     console.log("🚪 Página de login carregada.");

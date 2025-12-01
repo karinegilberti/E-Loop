@@ -1,7 +1,11 @@
 /* livros.js — carregando livros do banco + carrinho via API (MySQL) */
 
 document.addEventListener("DOMContentLoaded", () => {
-  const API_URL = "http://localhost:3001/api/anuncios";
+
+  // 🔗 BACKEND DO RAILWAY
+  const API_URL = "https://balanced-fascination.up.railway.app/api/anuncios";
+  const BACKEND_URL = "https://balanced-fascination.up.railway.app";
+
   const lista = document.getElementById("listaLivros");
 
   const contadorEl = document.getElementById("contadorCarrinho");
@@ -11,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnContinuar = document.getElementById("btnContinuar");
   const btnIrCarrinho = document.getElementById("btnIrCarrinho");
 
-  // ==================== USUÁRIO LOGADO (apenas pra manter compat) ====================
+  // ==================== USUÁRIO LOGADO ====================
   let usuarioRaw = JSON.parse(localStorage.getItem("usuarioLogado"));
   let usuario = usuarioRaw && typeof usuarioRaw === "object" ? usuarioRaw : {};
   if (!Array.isArray(usuario.favoritos)) usuario.favoritos = [];
@@ -23,23 +27,26 @@ document.addEventListener("DOMContentLoaded", () => {
     return `R$ ${Number(valor || 0).toFixed(2).replace(".", ",")}`;
   }
 
+  function montarImagem(imagem) {
+    if (!imagem) return "src/sem-imagem.png";
+    if (imagem.startsWith("http")) return imagem;
+    return `${BACKEND_URL}${imagem}`;
+  }
+
   function atualizarContador() {
-    // usa função global do carrinho-api.js, se existir
     if (typeof atualizarContadorCarrinhoGlobal === "function") {
       atualizarContadorCarrinhoGlobal();
-    } else if (contadorEl) {
-      // fallback: deixa zero
-      contadorEl.textContent = "0";
     }
   }
 
   // ==================== BUSCAR LIVROS ====================
+
   async function carregarLivros() {
     try {
       const resp = await fetch(API_URL);
       const dados = await resp.json();
 
-      // Filtra apenas anúncios da categoria "Livros"
+      // 🔎 Filtrar apenas livros
       const livros = dados.filter(p => p.categoria_nome === "Livros");
 
       if (livros.length === 0) {
@@ -48,14 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Monta os cards de livros
+      // 📌 Montar cards
       lista.innerHTML = livros
         .map(l => {
           const preco = formatarBRL(l.preco);
-          const imgPath = l.imagem || null;    // /uploads/...
-          const imgUrl = imgPath
-            ? `http://localhost:3001${imgPath}`
-            : "src/sem-imagem.png";
+          const imgUrl = montarImagem(l.imagem);
 
           return `
         <div class="produto-card"
@@ -64,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
              data-preco="${l.preco}"
              data-descricao="${l.descricao || ""}"
              data-condicao="${l.condicao || ""}"
-             data-imagem="${imgPath || ""}"
+             data-imagem="${l.imagem || ""}"
              data-vendedor-id="${l.usuario_id || ""}"
              data-vendedor-nome="${l.vendedor_nome || ""}"
              data-vendedor-telefone="${l.vendedor_telefone || ""}"
@@ -81,6 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .join("");
 
       inicializarEventos();
+
     } catch (erro) {
       console.error("Erro ao carregar livros:", erro);
       lista.innerHTML =
@@ -88,8 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ==================== EVENTOS DO CARD ====================
+  // ==================== EVENTOS ====================
+
   function inicializarEventos() {
+
     // ➕ Adicionar ao carrinho
     document.querySelectorAll(".add-carrinho").forEach(btn => {
       btn.addEventListener("click", async e => {
@@ -98,93 +105,74 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!card) return;
 
         const produto = {
-          // IDs
-          id: parseInt(card.dataset.id),
-          anuncio_id: parseInt(card.dataset.id),
+          id: Number(card.dataset.id),
+          anuncio_id: Number(card.dataset.id),
 
-          // Dados do produto
-          nome: card.dataset.nome,
           nome_produto: card.dataset.nome,
-          preco: parseFloat(card.dataset.preco),
-          descricao: card.dataset.descricao || "",
-          condicao: card.dataset.condicao || "",
+          preco: Number(card.dataset.preco),
+          descricao: card.dataset.descricao,
+          condicao: card.dataset.condicao,
 
-          // Imagem (apenas o caminho salvo no banco, ex: /uploads/...)
-          imagem: card.dataset.imagem || null,
+          imagem: card.dataset.imagem,
 
-          // Vendedor
-          usuario_id: parseInt(card.dataset.vendedorId) || null,
-          vendedor_id: parseInt(card.dataset.vendedorId) || null,
-          vendedor_nome: card.dataset.vendedorNome || "Vendedor",
-          vendedor_telefone: card.dataset.vendedorTelefone || "",
-          vendedor_cidade: card.dataset.vendedorCidade || "",
+          usuario_id: Number(card.dataset.vendedorId),
+          vendedor_id: Number(card.dataset.vendedorId),
+          vendedor_nome: card.dataset.vendedorNome,
+          vendedor_telefone: card.dataset.vendedorTelefone,
+          vendedor_cidade: card.dataset.vendedorCidade,
 
-          // Quantidade inicial
           quantidade: 1
         };
 
-        // Usa a função global que salva o carrinho NO BANCO (carrinho-api.js)
+        // 🔥 Enviar para o banco (carrinho-api.js)
         if (typeof adicionarAoCarrinho === "function") {
           await adicionarAoCarrinho(produto);
           atualizarContador();
 
-          // Mostra modal de confirmação
-          if (mensagemModal && modal) {
+          if (mensagemModal) {
             mensagemModal.textContent = `"${produto.nome_produto}" foi adicionado ao carrinho!`;
             modal.style.display = "flex";
           }
+
         } else {
-          console.error(
-            "Função adicionarAoCarrinho não encontrada. Certifique-se de incluir carrinho-api.js antes de livros.js."
-          );
-          alert("Erro ao adicionar ao carrinho (carrinho-api.js não carregado).");
+          alert("Erro: carrinho-api.js não carregado.");
         }
       });
     });
 
-    // 🔍 Ver detalhes do livro
+    // 👉 Ver detalhes
     document.querySelectorAll(".produto-card").forEach(card => {
       card.addEventListener("click", e => {
-        // se clicou no botão de carrinho, não vai para detalhes
         if (e.target.closest(".add-carrinho")) return;
 
         const produtoDetalhes = {
-          id: parseInt(card.dataset.id),
+          id: Number(card.dataset.id),
           nome_produto: card.dataset.nome,
-          preco: parseFloat(card.dataset.preco),
-          imagem: card.dataset.imagem || null, // só o caminho
-          descricao: card.dataset.descricao || "",
-          condicao: card.dataset.condicao || "",
-          vendedor_nome: card.dataset.vendedorNome || "",
-          vendedor_telefone: card.dataset.vendedorTelefone || "",
-          vendedor_cidade: card.dataset.vendedorCidade || ""
+          preco: Number(card.dataset.preco),
+          imagem: montarImagem(card.dataset.imagem),
+          descricao: card.dataset.descricao,
+          condicao: card.dataset.condicao,
+          vendedor_nome: card.dataset.vendedorNome,
+          vendedor_telefone: card.dataset.vendedorTelefone,
+          vendedor_cidade: card.dataset.vendedorCidade
         };
 
-        localStorage.setItem(
-          "produtoDetalhes",
-          JSON.stringify(produtoDetalhes)
-        );
+        localStorage.setItem("produtoDetalhes", JSON.stringify(produtoDetalhes));
         window.location.href = "detalhes.html";
       });
     });
   }
 
   // ==================== MODAL ====================
+
   if (btnFecharModal)
-    btnFecharModal.addEventListener(
-      "click",
-      () => (modal.style.display = "none")
-    );
+    btnFecharModal.addEventListener("click", () => modal.style.display = "none");
+
   if (btnContinuar)
-    btnContinuar.addEventListener(
-      "click",
-      () => (modal.style.display = "none")
-    );
+    btnContinuar.addEventListener("click", () => modal.style.display = "none");
+
   if (btnIrCarrinho)
-    btnIrCarrinho.addEventListener(
-      "click",
-      () => (window.location.href = "carrinho.html")
-    );
+    btnIrCarrinho.addEventListener("click", () => window.location.href = "carrinho.html");
 
   if (modal) {
     modal.addEventListener("click", e => {

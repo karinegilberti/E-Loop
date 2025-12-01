@@ -2,7 +2,10 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const API_URL = "http://localhost:3001/api/anuncios";
+  // 🔧 API DO RAILWAY — CORRIGIDO!
+  const API_URL = "https://balanced-fascination.up.railway.app/api/anuncios";
+  const BASE_URL = "https://balanced-fascination.up.railway.app";
+
   const lista = document.querySelector(".grid-index");
 
   const modal = document.querySelector(".modal");
@@ -35,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
              data-id="${c.id}"
              data-nome="${c.nome_produto}"
              data-preco="${c.preco}"
-             data-img="${c.imagem ? `http://localhost:3001${c.imagem}` : "src/sem-imagem.png"}"
+             data-img="${c.imagem ? `${BASE_URL}${c.imagem}` : "src/sem-imagem.png"}"
              data-descricao="${c.descricao || ''}"
              data-condicao="${c.condicao || ''}"
              data-vendedor-id="${c.usuario_id || ''}"
@@ -43,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
              data-vendedor-telefone="${c.telefone || ''}">
 
           <div class="img-box">
-            <img src="${c.imagem ? `http://localhost:3001${c.imagem}` : "src/sem-imagem.png"}">
+            <img src="${c.imagem ? `${BASE_URL}${c.imagem}` : "src/sem-imagem.png"}">
             <div class="favorite-icon"><i class="fa fa-heart"></i></div>
           </div>
 
@@ -133,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
   btnIrCarrinho.addEventListener("click", () => window.location.href = "carrinho.html");
   window.addEventListener("click", (e) => { if (e.target === modal) modal.style.display = "none"; });
 
-  // ================= INICIALIZAR DEPOIS QUE OS CARDS FOREM GERADOS =================
+  // ================= INICIALIZAR EVENTOS =================
   function inicializarEventos() {
     eventoFavoritar();
     eventoDetalhes();
@@ -142,5 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= CARREGAR =================
   carregarCDs();
-  contadorCarrinho.textContent = (JSON.parse(localStorage.getItem("carrinhoEloop")) || []).reduce((acc, el) => acc + (el.quantidade || 1), 0);
+
+  contadorCarrinho.textContent = (JSON.parse(localStorage.getItem("carrinhoEloop")) || [])
+    .reduce((acc, el) => acc + (el.quantidade || 1), 0);
 });

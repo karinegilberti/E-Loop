@@ -1,5 +1,5 @@
 // ================================================================
-// 🛒 CARRINHO.JS — E-Loop (sem quantidade, sincronizado com MySQL)
+// 🛒 CARRINHO.JS — E-Loop (sincronizado com MySQL, versão Railway)
 // ================================================================
 
 let usuarioLogado = null;
@@ -10,10 +10,10 @@ try {
   usuarioLogado = null;
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  const API = "http://localhost:3001/api";
+  // 🔧 API DO RAILWAY — CORRIGIDO!
+  const API = "https://balanced-fascination.up.railway.app/api";
 
   const tabelaCarrinhoBody = document.getElementById("listaCarrinho");
   const subtotalEl = document.getElementById("subtotal");
@@ -31,9 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const nomeProduto = p => p.nome || p.nome_produto || p.titulo || "Produto";
   const condicaoProduto = p => p.condicao || "N/A";
 
+  // 🔧 CORRIGIDO: imagens agora usam o Railway
   const fotoProduto = p => {
     if (p.img) return p.img;
-    if (p.imagem) return `http://localhost:3001${p.imagem}`;
+    if (p.imagem) return `https://balanced-fascination.up.railway.app${p.imagem}`;
     return "https://via.placeholder.com/80?text=Sem+Imagem";
   };
 
@@ -139,83 +140,80 @@ document.addEventListener("DOMContentLoaded", () => {
     taxasEl.textContent = "R$ 0,00";
   }
 
-  // ============= FINALIZAR COMPRA (WHATSAPP + E-MAIL) =============
-function finalizar() {
-  if (!carrinho.length) return alert("Carrinho está vazio!");
+  // ============= FINALIZAR COMPRA =============
+  function finalizar() {
+    if (!carrinho.length) return alert("Carrinho está vazio!");
 
-  if (!usuarioLogado || !usuarioLogado.id) {
-    alert("Você precisa estar logado para finalizar a compra.");
-    window.location.href = "login.html";
-    return;
-  }
+    if (!usuarioLogado || !usuarioLogado.id) {
+      alert("Você precisa estar logado para finalizar a compra.");
+      window.location.href = "login.html";
+      return;
+    }
 
-  // Agrupar itens por vendedor
-  const grupos = {};
-  carrinho.forEach(p => {
-    const v = dadosVendedor(p);
-    if (!grupos[v.id]) grupos[v.id] = { ...v, itens: [] };
-    grupos[v.id].itens.push(p);
-  });
+    // Agrupar itens por vendedor
+    const grupos = {};
+    carrinho.forEach(p => {
+      const v = dadosVendedor(p);
+      if (!grupos[v.id]) grupos[v.id] = { ...v, itens: [] };
+      grupos[v.id].itens.push(p);
+    });
 
-  // ===== Overlay e Container do Modal =====
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay-finalizar";
-  overlay.innerHTML = `
-    <div class="modal-finalizar">
-      <button class="modal-fechar" aria-label="Fechar">&times;</button>
-      <h2>Finalizar compra - Contato com o vendedor</h2>
-      <p class="texto-modal">Entre em contato com o vendedor para combinar pagamento e retirada.</p>
-      <div class="modal-corpo"></div>
-      <div class="area-fechar">
-        <button class="btn-fechar-global">Fechar</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  const corpo = overlay.querySelector(".modal-corpo");
-
-  // ===== Blocos do vendedor =====
-  Object.values(grupos).forEach(v => {
-    const itens = v.itens.map(i => `• ${nomeProduto(i)} - ${formataBRL(i.preco)}`).join("<br>");
-    const msg = `Olá ${v.nome}, tenho interesse em: ${v.itens.map(i => `"${nomeProduto(i)}"`).join(", ")}. Podemos combinar pagamento e entrega?`;
-
-    const bloco = document.createElement("div");
-    bloco.className = "vendedor-bloco";
-    bloco.innerHTML = `
-      <div class="vendedor-info">
-        <h3>${v.nome}</h3>
-        <p class="vendedor-contato">${v.telefone ? "📱 " + v.telefone : "Sem WhatsApp informado"}</p>
-        <p class="vendedor-contato">${v.email ? "✉ " + v.email : ""}</p>
-        <div class="vendedor-itens">${itens}</div>
-        <div class="vendedor-acoes"></div>
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay-finalizar";
+    overlay.innerHTML = `
+      <div class="modal-finalizar">
+        <button class="modal-fechar" aria-label="Fechar">&times;</button>
+        <h2>Finalizar compra - Contato com o vendedor</h2>
+        <p class="texto-modal">Entre em contato com o vendedor para combinar pagamento e retirada.</p>
+        <div class="modal-corpo"></div>
+        <div class="area-fechar">
+          <button class="btn-fechar-global">Fechar</button>
+        </div>
       </div>`;
+    document.body.appendChild(overlay);
 
-    const acoes = bloco.querySelector(".vendedor-acoes");
+    const corpo = overlay.querySelector(".modal-corpo");
 
-    if (v.telefone) {
-      const b = document.createElement("button");
-      b.className = "btn-whatsapp";
-      b.innerHTML = "💬 WhatsApp";
-      b.onclick = () => window.open("https://wa.me/" + v.telefone.replace(/\D/g, "") + "?text=" + encodeURIComponent(msg));
-      acoes.appendChild(b);
-    }
+    Object.values(grupos).forEach(v => {
+      const itens = v.itens.map(i => `• ${nomeProduto(i)} - ${formataBRL(i.preco)}`).join("<br>");
+      const msg = `Olá ${v.nome}, tenho interesse em: ${v.itens.map(i => `"${nomeProduto(i)}"`).join(", ")}. Podemos combinar pagamento e entrega?`;
 
-    if (v.email) {
-      const b = document.createElement("button");
-      b.className = "btn-email";
-      b.innerHTML = "📧 E-mail";
-      b.onclick = () => window.location.href = `mailto:${v.email}?subject=Interesse nos produtos&body=${encodeURIComponent(msg)}`;
-      acoes.appendChild(b);
-    }
+      const bloco = document.createElement("div");
+      bloco.className = "vendedor-bloco";
+      bloco.innerHTML = `
+        <div class="vendedor-info">
+          <h3>${v.nome}</h3>
+          <p class="vendedor-contato">${v.telefone ? "📱 " + v.telefone : "Sem WhatsApp informado"}</p>
+          <p class="vendedor-contato">${v.email ? "✉ " + v.email : ""}</p>
+          <div class="vendedor-itens">${itens}</div>
+          <div class="vendedor-acoes"></div>
+        </div>`;
 
-    corpo.appendChild(bloco);
-  });
+      const acoes = bloco.querySelector(".vendedor-acoes");
 
-  // ===== Fechar modal =====
-  overlay.querySelector(".modal-fechar").onclick =
-  overlay.querySelector(".btn-fechar-global").onclick =
-    () => overlay.remove();
-}
+      if (v.telefone) {
+        const b = document.createElement("button");
+        b.className = "btn-whatsapp";
+        b.innerHTML = "💬 WhatsApp";
+        b.onclick = () => window.open("https://wa.me/" + v.telefone.replace(/\D/g, "") + "?text=" + encodeURIComponent(msg));
+        acoes.appendChild(b);
+      }
+
+      if (v.email) {
+        const b = document.createElement("button");
+        b.className = "btn-email";
+        b.innerHTML = "📧 E-mail";
+        b.onclick = () => window.location.href = `mailto:${v.email}?subject=Interesse nos produtos&body=${encodeURIComponent(msg)}`;
+        acoes.appendChild(b);
+      }
+
+      corpo.appendChild(bloco);
+    });
+
+    overlay.querySelector(".modal-fechar").onclick =
+    overlay.querySelector(".btn-fechar-global").onclick =
+      () => overlay.remove();
+  }
 
   // ============= BOTÃO FINALIZAR =============
   btnFinalizar && (btnFinalizar.onclick = finalizar);

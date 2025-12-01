@@ -1,8 +1,9 @@
-/* vinil.js — carregando vinis do banco + carrinho via API (MySQL) */
+/* vinil.js — versão PRODUÇÃO (Railway) */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const API_URL = "http://localhost:3001/api/explorar/anuncios";
+  const BASE_URL = "https://balanced-fascination.up.railway.app";
+  const API_URL = `${BASE_URL}/api/explorar/anuncios`;
   const container = document.querySelector(".grid-index");
 
   const modal = document.getElementById("modalCarrinho");
@@ -24,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function atualizarContador() {
-    // contador oficial do carrinho via banco
     if (typeof atualizarContadorCarrinhoGlobal === "function") {
       atualizarContadorCarrinhoGlobal();
     } else if (contadorEl) contadorEl.textContent = "0";
@@ -55,8 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       container.innerHTML = vinis.map(v => {
-        const imgPath = v.imagem || null; // /uploads/arquivo.jpg
-        const imgUrl = imgPath ? `http://localhost:3001${imgPath}` : "src/sem-imagem.png";
+        const imgPath = v.imagem || null; 
+        const imgUrl = imgPath ? `${BASE_URL}${imgPath}` : "src/sem-imagem.png";
         const precoConvertido = formatarBRL(v.preco);
 
         return `
@@ -71,12 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
                data-vendedor-telefone="${v.vendedor_telefone || ''}"
                data-vendedor-cidade="${v.vendedor_cidade || ''}"
                data-descricao="${v.descricao || ''}">
-    
+
             <div class="img-box">
               <img src="${imgUrl}" alt="${v.nome_produto}">
               <div class="favorite-icon"><i class="fa fa-heart"></i></div>
             </div>
-    
+
             <h3>${v.nome_produto}</h3>
             <p class="preco">${precoConvertido}</p>
             <button class="btn-adicionar">Comprar</button>
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==================== EVENTOS ====================
   function inicializarEventos() {
 
-    // ❤️ Favoritar
+    // ❤️ Favoritar visualmente
     document.querySelectorAll(".favorite-icon").forEach(icon => {
       icon.addEventListener("click", e => {
         e.stopPropagation();
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // 🛒 Comprar → Carrinho NO BANCO
+    // 🛒 Comprar — salvar no carrinho do banco
     document.querySelectorAll(".btn-adicionar").forEach(btn => {
       btn.addEventListener("click", async e => {
         e.stopPropagation();
@@ -111,28 +111,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!card) return;
 
         const produto = {
-          // IDs
           id: parseInt(card.dataset.id),
           anuncio_id: parseInt(card.dataset.id),
-
-          // Dados
-          nome: card.dataset.nome,
           nome_produto: card.dataset.nome,
+          nome: card.dataset.nome,
           preco: parseFloat(card.dataset.preco),
           condicao: card.dataset.condicao || "",
           descricao: card.dataset.descricao || "",
-
-          // Imagem (salvar só o caminho original!)
           imagem: card.dataset.imagem || null,
-
-          // Vendedor
           usuario_id: parseInt(card.dataset.vendedorId) || null,
           vendedor_id: parseInt(card.dataset.vendedorId) || null,
           vendedor_nome: card.dataset.vendedorNome || "Vendedor",
           vendedor_telefone: card.dataset.vendedorTelefone || "",
           vendedor_cidade: card.dataset.vendedorCidade || "",
-
-          // Quantidade
           quantidade: 1
         };
 
@@ -142,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
           abrirModal(`"${produto.nome_produto}" foi adicionado ao carrinho!`);
         } else {
           alert("Erro ao adicionar ao carrinho: carrinho-api.js não encontrado.");
-          console.error("adicionarAoCarrinho não encontrada! Inclua carrinho-api.js antes de vinil.js.");
         }
       });
     });
@@ -150,14 +140,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🔍 Ver detalhes
     document.querySelectorAll(".card").forEach(card => {
       card.addEventListener("click", e => {
-        // Se clicou no coração ou comprar, não abre detalhes
         if (e.target.closest(".btn-adicionar") || e.target.closest(".favorite-icon")) return;
 
         const produtoDetalhes = {
           id: parseInt(card.dataset.id),
           nome_produto: card.dataset.nome,
           preco: parseFloat(card.dataset.preco),
-          imagem: card.dataset.imagem || null,
+          imagem: card.dataset.imagem ? `${BASE_URL}${card.dataset.imagem}` : null,
           condicao: card.dataset.condicao,
           descricao: card.dataset.descricao,
           vendedor_nome: card.dataset.vendedorNome,
