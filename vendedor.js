@@ -23,7 +23,7 @@ async function carregarPerfil(id) {
     const res = await fetch(`${API}/usuario/${id}`);
     const data = await res.json();
 
-    if (!data.success) return;
+    if (!data.success || !data.usuario) return;
 
     const u = data.usuario;
 
@@ -32,13 +32,16 @@ async function carregarPerfil(id) {
     document.getElementById("telefoneVendedor").textContent =
       u.telefone ? `Telefone: ${u.telefone}` : "Telefone não disponível";
 
+    // Foto
     document.getElementById("fotoVendedor").src =
       u.foto ? `${BASE_URL}${u.foto}` : "https://i.pravatar.cc/150?img=12";
 
+    // Botão WhatsApp
     document.getElementById("btnWhatsapp").onclick = () => {
       if (!u.telefone) return alert("Vendedor não possui telefone cadastrado!");
       window.open(`https://wa.me/55${u.telefone}`, "_blank");
     };
+
   } catch (error) {
     console.error("Erro ao carregar perfil:", error);
   }
@@ -55,7 +58,7 @@ async function carregarProdutos(id) {
     const lista = document.getElementById("listaProdutosVendedor");
     lista.innerHTML = "";
 
-    if (!produtos.length) {
+    if (!Array.isArray(produtos) || produtos.length === 0) {
       lista.innerHTML = "<p>Este vendedor ainda não possui produtos.</p>";
       return;
     }

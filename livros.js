@@ -3,8 +3,8 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   // 🔗 BACKEND DO RAILWAY
-  const API_URL = "https://balanced-fascination.up.railway.app/api/anuncios";
-  const BACKEND_URL = "https://balanced-fascination.up.railway.app";
+  const API_URL = "https://balanced-fascination-production.up.railway.app/api/anuncios";
+  const BACKEND_URL = "https://balanced-fascination-production.up.railway.app";
 
   const lista = document.getElementById("listaLivros");
 

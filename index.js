@@ -1,5 +1,5 @@
 // URL base da API (BACKEND HOSTEADO NO RAILWAY)
-const API_URL = "https://balanced-fascination.up.railway.app/api";
+const API_URL = "https://balanced-fascination-production.up.railway.app/api";
 
 // ===============================
 // 🔹 UTILITÁRIOS GERAIS
@@ -27,7 +27,7 @@ function montarUrlImagemAnuncio(anuncio) {
 
   if (anuncio.imagem.startsWith("http")) return anuncio.imagem;
 
-  return `https://balanced-fascination.up.railway.app${anuncio.imagem}`;
+  return `https://balanced-fascination-production.up.railway.app${anuncio.imagem}`;
 }
 
 // Atualiza contador do carrinho global
@@ -64,7 +64,6 @@ function criarCardAnuncio(anuncio) {
     </div>
   `;
 
-  // Evento do botão
   const btnAdd = card.querySelector(".btn-add-carrinho");
   btnAdd.addEventListener("click", () => {
     const produto = {
@@ -152,8 +151,9 @@ function produtoCard(prod) {
 
 async function carregarProdutos() {
   try {
-    const resp = await fetch("https://balanced-fascination.up.railway.app/api/anuncios");
+    const resp = await fetch("https://balanced-fascination-production.up.railway.app/api/anuncios");
     const produtos = await resp.json();
+
     const lista = document.getElementById("listaProdutos");
 
     lista.innerHTML = produtos.map(p =>
@@ -161,7 +161,7 @@ async function carregarProdutos() {
         id: p.id,
         nome: p.nome_produto,
         preco: p.preco,
-        img: p.imagem ? `https://balanced-fascination.up.railway.app${p.imagem}` : "src/sem-imagem.png",
+        img: p.imagem ? `https://balanced-fascination-production.up.railway.app${p.imagem}` : "src/sem-imagem.png",
         condicao: p.condicao,
         descricao: p.descricao,
         usuario_id: p.usuario_id,

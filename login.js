@@ -2,8 +2,8 @@
 // 🔐 LOGIN DO USUÁRIO (PRODUÇÃO)
 // ===============================
 
-// 🔗 SUA API NO RAILWAY
-const API_URL = "https://balanced-fascination.up.railway.app/api";
+// 🔗 SUA API NO RAILWAY (CORRIGIDA)
+const API_URL = "https://balanced-fascination-production.up.railway.app/api";
 
 const formLogin = document.getElementById("formLogin");
 const btnLogin = document.getElementById("btnLogin");

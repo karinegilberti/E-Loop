@@ -2,8 +2,8 @@
 let usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
 if (!usuario) usuario = null;
 
-// ===== URL DO BACKEND NO RAILWAY =====
-const API = "https://balanced-fascination.up.railway.app/api";
+// ===== URL DO BACKEND NO RAILWAY — CORRIGIDA! =====
+const API = "https://balanced-fascination-production.up.railway.app/api";
 
 /**
  * Inicializa os favoritos para qualquer container de produtos.
@@ -36,12 +36,10 @@ async function inicializarFavoritos() {
       e.stopPropagation();
 
       if (icon.classList.contains("active")) {
-        // remover
         await removerFavoritoDB(usuario.id, idProduto);
         icon.classList.remove("active");
         icon.style.color = "";
       } else {
-        // adicionar
         await salvarFavoritoDB(usuario.id, idProduto);
         icon.classList.add("active");
         icon.style.color = "red";

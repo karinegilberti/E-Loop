@@ -47,6 +47,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const resp = await fetch(API_URL);
       const data = await resp.json();
 
+      if (!data.anuncios) {
+        container.innerHTML = "<p style='text-align:center;'>Nenhum vinil encontrado.</p>";
+        return;
+      }
+
       const vinis = data.anuncios.filter(p => p.categoria_nome === "Vinil");
 
       if (!vinis.length) {
@@ -55,8 +60,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       container.innerHTML = vinis.map(v => {
-        const imgPath = v.imagem || null; 
-        const imgUrl = imgPath ? `${BASE_URL}${imgPath}` : "src/sem-imagem.png";
+        const imgUrl = v.imagem
+          ? `${BASE_URL}${v.imagem}`
+          : "src/sem-imagem.png";
+
         const precoConvertido = formatarBRL(v.preco);
 
         return `
@@ -65,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
                data-nome="${v.nome_produto}"
                data-preco="${v.preco}"
                data-condicao="${v.condicao || ''}"
-               data-imagem="${imgPath || ''}"
+               data-imagem="${v.imagem || ''}"
                data-vendedor-id="${v.usuario_id || ''}"
                data-vendedor-nome="${v.vendedor_nome || ''}"
                data-vendedor-telefone="${v.vendedor_telefone || ''}"
@@ -111,19 +118,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!card) return;
 
         const produto = {
-          id: parseInt(card.dataset.id),
-          anuncio_id: parseInt(card.dataset.id),
-          nome_produto: card.dataset.nome,
+          id: Number(card.dataset.id),
+          anuncio_id: Number(card.dataset.id),
           nome: card.dataset.nome,
-          preco: parseFloat(card.dataset.preco),
-          condicao: card.dataset.condicao || "",
-          descricao: card.dataset.descricao || "",
-          imagem: card.dataset.imagem || null,
-          usuario_id: parseInt(card.dataset.vendedorId) || null,
-          vendedor_id: parseInt(card.dataset.vendedorId) || null,
-          vendedor_nome: card.dataset.vendedorNome || "Vendedor",
-          vendedor_telefone: card.dataset.vendedorTelefone || "",
-          vendedor_cidade: card.dataset.vendedorCidade || "",
+          nome_produto: card.dataset.nome,
+          preco: Number(card.dataset.preco),
+          condicao: card.dataset.condicao,
+          descricao: card.dataset.descricao,
+          imagem: card.dataset.imagem,
+          usuario_id: Number(card.dataset.vendedorId),
+          vendedor_id: Number(card.dataset.vendedorId),
+          vendedor_nome: card.dataset.vendedorNome,
+          vendedor_telefone: card.dataset.vendedorTelefone,
+          vendedor_cidade: card.dataset.vendedorCidade,
           quantidade: 1
         };
 
@@ -132,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
           atualizarContador();
           abrirModal(`"${produto.nome_produto}" foi adicionado ao carrinho!`);
         } else {
-          alert("Erro ao adicionar ao carrinho: carrinho-api.js não encontrado.");
+          alert("Erro ao adicionar: carrinho-api.js não encontrado.");
         }
       });
     });
@@ -140,12 +147,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🔍 Ver detalhes
     document.querySelectorAll(".card").forEach(card => {
       card.addEventListener("click", e => {
+
+        // Não abrir detalhes ao clicar no coração ou botão
         if (e.target.closest(".btn-adicionar") || e.target.closest(".favorite-icon")) return;
 
         const produtoDetalhes = {
-          id: parseInt(card.dataset.id),
+          id: Number(card.dataset.id),
           nome_produto: card.dataset.nome,
-          preco: parseFloat(card.dataset.preco),
+          preco: Number(card.dataset.preco),
           imagem: card.dataset.imagem ? `${BASE_URL}${card.dataset.imagem}` : null,
           condicao: card.dataset.condicao,
           descricao: card.dataset.descricao,
@@ -164,9 +173,13 @@ document.addEventListener("DOMContentLoaded", () => {
   btnContinuar?.addEventListener("click", fecharModal);
   fecharModalSpan?.addEventListener("click", fecharModal);
   btnIrCarrinho?.addEventListener("click", () => window.location.href = "carrinho.html");
-  window.addEventListener("click", e => { if (e.target === modal) fecharModal(); });
+
+  window.addEventListener("click", e => {
+    if (e.target === modal) fecharModal();
+  });
 
   // ==================== INICIAR ====================
   carregarVinis();
   atualizarContador();
+
 });

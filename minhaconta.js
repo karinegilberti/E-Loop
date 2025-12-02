@@ -1,7 +1,7 @@
 /* =======================================================================
    🔗 API DO RAILWAY (PRODUÇÃO)
    ====================================================================== */
-const API_URL = "https://balanced-fascination.up.railway.app/api";
+const API_URL = "https://balanced-fascination-production.up.railway.app/api";
 
 /* =======================================================================
    VARIÁVEIS GLOBAIS

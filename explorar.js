@@ -20,8 +20,8 @@ let explorarProdutos = {
   todosAnuncios: []
 };
 
-// ====== URL BASE DO BACKEND (RAILWAY) ======
-const API_BASE = "https://balanced-fascination.up.railway.app";
+// ====== URL BASE DO BACKEND (RAILWAY) — CORRIGIDA! ======
+const API_BASE = "https://balanced-fascination-production.up.railway.app";
 
 // ====== AO CARREGAR A PÁGINA ======
 document.addEventListener("DOMContentLoaded", () => {

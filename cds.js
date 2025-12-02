@@ -2,9 +2,9 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 🔧 API DO RAILWAY — CORRIGIDO!
-  const API_URL = "https://balanced-fascination.up.railway.app/api/anuncios";
-  const BASE_URL = "https://balanced-fascination.up.railway.app";
+  // 🔧 API DO RAILWAY — APENAS URL CORRIGIDA!
+  const API_URL = "https://balanced-fascination-production.up.railway.app/api/anuncios";
+  const BASE_URL = "https://balanced-fascination-production.up.railway.app";
 
   const lista = document.querySelector(".grid-index");
 

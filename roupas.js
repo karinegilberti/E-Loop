@@ -3,8 +3,8 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   // ========================= 🔗 API EM PRODUÇÃO (Railway) =========================
-  const BASE_URL = "https://balanced-fascination.up.railway.app";
-  const API_URL = `${BASE_URL}/api/anuncios/categoria/1`; // categoria 1 = roupas
+  const BASE_URL = "https://balanced-fascination-production.up.railway.app/api";
+ const API_URL = `${BASE_URL}/api/anuncios/categoria/1`; // categoria 1 = roupas
   const container = document.querySelector(".grid-index");
 
   const contadorEl = document.getElementById("contadorCarrinho");
@@ -74,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
     lista.forEach(produto => {
       const imgPath = produto.imagem || null; // ex: /uploads/arquivo.jpg
       const imgUrl = imgPath
-        ? `${BASE_URL}${imgPath}`
-        : "src/sem-imagem.png";
+      ? `${BASE_URL}${imgPath}`
+      : "src/sem-imagem.png";
 
       const precoFormatado = formatarBRL(produto.preco);
 

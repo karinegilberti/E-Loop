@@ -3,7 +3,7 @@
 // ============================
 
 // URL da sua API
-const API_URL = "https://balanced-fascination.up.railway.app/api/cadastro";
+const API_URL = "https://balanced-fascination-production.up.railway.app/api/cadastro";
 
 window.addEventListener("DOMContentLoaded", () => {
   const cepInput = document.getElementById("cep");

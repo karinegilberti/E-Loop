@@ -5,8 +5,8 @@ let produtoSelecionado = JSON.parse(localStorage.getItem("produtoDetalhes")) || 
 console.log("📌 detalhes.js carregou!");
 console.log("🧪 Produto vindo do backend/localStorage:", produtoSelecionado);
 
-// 🔧 URL BASE DO RAILWAY
-const BASE_URL = "https://balanced-fascination.up.railway.app";
+// 🔧 URL BASE DO RAILWAY — CORRIGIDA!
+const BASE_URL = "https://balanced-fascination-production.up.railway.app";
 
 // ====== AO CARREGAR ======
 document.addEventListener("DOMContentLoaded", () => {
@@ -63,12 +63,11 @@ function inicializarGaleria() {
 
   let fotoFinal = produtoSelecionado.imagem;
 
-  // 🔧 Se a imagem NÃO começar com http, adiciona a URL do Railway
+  // 🔧 Se a imagem NÃO começar com http, adiciona a URL do Railway (CORRIGIDO)
   if (fotoFinal && !fotoFinal.startsWith("http")) {
     fotoFinal = BASE_URL + fotoFinal;
   }
 
-  // Caso não tenha imagem
   if (!fotoFinal) {
     fotoFinal = "https://via.placeholder.com/400x300?text=Sem+Imagem";
   }
@@ -81,7 +80,6 @@ function inicializarGaleria() {
     produtoSelecionado.nome ||
     "Produto";
 
-  // Oculta miniaturas por enquanto
   if (thumbs) {
     thumbs.innerHTML = "";
     thumbs.style.display = "none";
@@ -91,7 +89,6 @@ function inicializarGaleria() {
 // ====== INICIALIZA BOTÕES ======
 function inicializarBotoes() {
 
-  // 🔽 Adicionar ao Carrinho (via API)
   document.getElementById("btnAddCarrinho").addEventListener("click", async () => {
     if (typeof adicionarAoCarrinho === "function") {
       await adicionarAoCarrinho(produtoSelecionado);
@@ -102,12 +99,10 @@ function inicializarBotoes() {
     }
   });
 
-  // 🔽 Comprar agora (em construção)
   document.getElementById("btnComprarAgora").addEventListener("click", () => {
     alert("Funcionalidade de compra imediata ainda não disponível.");
   });
 
-  // 🔽 Ver perfil do vendedor
   document.getElementById("btnVerPerfil").addEventListener("click", e => {
     e.preventDefault();
     window.location.href = "minhaconta.html";

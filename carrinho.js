@@ -13,7 +13,7 @@ try {
 document.addEventListener("DOMContentLoaded", () => {
 
   // 🔧 API DO RAILWAY — CORRIGIDO!
-  const API = "https://balanced-fascination.up.railway.app/api";
+  const API = "https://balanced-fascination-production.up.railway.app/api";
 
   const tabelaCarrinhoBody = document.getElementById("listaCarrinho");
   const subtotalEl = document.getElementById("subtotal");
@@ -31,10 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const nomeProduto = p => p.nome || p.nome_produto || p.titulo || "Produto";
   const condicaoProduto = p => p.condicao || "N/A";
 
-  // 🔧 CORRIGIDO: imagens agora usam o Railway
+  // 🔧 CORRIGIDO: imagens agora usam o domínio correto
   const fotoProduto = p => {
     if (p.img) return p.img;
-    if (p.imagem) return `https://balanced-fascination.up.railway.app${p.imagem}`;
+    if (p.imagem) return `https://balanced-fascination-production.up.railway.app${p.imagem}`;
     return "https://via.placeholder.com/80?text=Sem+Imagem";
   };
 
@@ -195,7 +195,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const b = document.createElement("button");
         b.className = "btn-whatsapp";
         b.innerHTML = "💬 WhatsApp";
-        b.onclick = () => window.open("https://wa.me/" + v.telefone.replace(/\D/g, "") + "?text=" + encodeURIComponent(msg));
+        b.onclick = () =>
+          window.open("https://wa.me/" + v.telefone.replace(/\D/g, "") + "?text=" + encodeURIComponent(msg));
         acoes.appendChild(b);
       }
 
@@ -203,7 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const b = document.createElement("button");
         b.className = "btn-email";
         b.innerHTML = "📧 E-mail";
-        b.onclick = () => window.location.href = `mailto:${v.email}?subject=Interesse nos produtos&body=${encodeURIComponent(msg)}`;
+        b.onclick = () =>
+          (window.location.href = `mailto:${v.email}?subject=Interesse nos produtos&body=${encodeURIComponent(msg)}`);
         acoes.appendChild(b);
       }
 

@@ -1,5 +1,5 @@
 // === URLs DO BACKEND (VERSÃO RAILWAY) ===
-const API_BASE = "https://balanced-fascination.up.railway.app";
+const API_BASE = "https://balanced-fascination-production.up.railway.app";
 
 const API_URL_RECUPERAR = `${API_BASE}/api/recuperar-senha`;
 const API_URL_REDEFINIR = `${API_BASE}/api/redefinir-senha`;
