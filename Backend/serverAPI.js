@@ -74,24 +74,16 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Permite requisições sem origin (Postman, mobile, apps)
       if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.log("❌ Origem bloqueada no CORS:", origin);
-      return callback(new Error("Não permitido pelo CORS"));
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      console.log("❌ Origem bloqueada pelo CORS:", origin);
+      return callback(new Error("CORS não permitido"));
     },
     methods: "GET,POST,PUT,DELETE,OPTIONS",
     allowedHeaders: "Content-Type, Authorization",
     credentials: true,
   })
 );
-
-// Corrige browsers enviando OPTIONS antes de POST/PUT
-app.options("(.*)", cors());
 
 // Pasta de uploads
 const UPLOADS_DIR = path.join(__dirname, "uploads");
