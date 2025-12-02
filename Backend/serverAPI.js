@@ -58,9 +58,6 @@ function verifyPassword(password, storedHash) {
 // ============================
 // APP / MIDDLEWARES
 // ============================
-// ============================
-// APP / MIDDLEWARES
-// ============================
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -94,7 +91,7 @@ app.use(
 );
 
 // Corrige browsers enviando OPTIONS antes de POST/PUT
-app.options("*", cors());
+app.options("(.*)", cors());
 
 // Pasta de uploads
 const UPLOADS_DIR = path.join(__dirname, "uploads");
