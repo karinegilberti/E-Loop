@@ -58,10 +58,43 @@ function verifyPassword(password, storedHash) {
 // ============================
 // APP / MIDDLEWARES
 // ============================
+// ============================
+// APP / MIDDLEWARES
+// ============================
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(cors());
+
+// ============================
+// 🌐 CORS COMPLETO PARA VERCEL
+// ============================
+const allowedOrigins = [
+  "https://e-loop-one.vercel.app",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500"
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Permite requisições sem origin (Postman, mobile, apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("❌ Origem bloqueada no CORS:", origin);
+      return callback(new Error("Não permitido pelo CORS"));
+    },
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type, Authorization",
+    credentials: true,
+  })
+);
+
+// Corrige browsers enviando OPTIONS antes de POST/PUT
+app.options("*", cors());
 
 // Pasta de uploads
 const UPLOADS_DIR = path.join(__dirname, "uploads");
