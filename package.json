@@ -7,6 +7,7 @@
     "nodemailer": "^7.0.10"
   },
   "scripts": {
-    "start": "node Backend/serverAPI.js"
+    "start": "node Backend/serverAPI.js",
+    "setup-db": "mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < Backend/setup.sql"
   }
 }
