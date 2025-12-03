@@ -1,5 +1,3 @@
-// serverAPI.js - API E-Loop completa
-
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
@@ -23,7 +21,6 @@ function hashPasswordPBKDF2(password) {
 function verifyPassword(password, storedHash) {
   if (!storedHash) return false;
   try {
-    // Hash PBKDF2 (novo padrão)
     if (storedHash.startsWith("pbkdf2$")) {
       const parts = storedHash.split("$");
       const salt = parts[1];
@@ -34,7 +31,6 @@ function verifyPassword(password, storedHash) {
       return derived === hash;
     }
 
-    // Suporte opcional a bcrypt (se existir no banco)
     if (storedHash.startsWith("$2")) {
       try {
         const bcrypt = require("bcryptjs");
@@ -47,7 +43,6 @@ function verifyPassword(password, storedHash) {
       }
     }
 
-    // Qualquer outra coisa, considera inválido
     return false;
   } catch (e) {
     console.error("Erro ao verificar senha:", e);
@@ -63,17 +58,18 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // ============================
-// 🌐 CORS COMPLETO PARA VERCEL
+// CORS - permitir Vercel + localhost
 // ============================
 const allowedOrigins = [
   "https://e-loop-one.vercel.app",
   "http://localhost:5500",
-  "http://127.0.0.1:5500"
+  "http://127.0.0.1:5500",
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
+      // permite requests sem origin (curl, Postman, mobile, etc.)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       console.log("❌ Origem bloqueada pelo CORS:", origin);
@@ -85,14 +81,17 @@ app.use(
   })
 );
 
-// Pasta de uploads
+// OBS: removi app.options("*", cors()) porque causava erro com express/router/path-to-regexp.
+
+// ============================
+// UPLOADS
+// ============================
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-// MULTER
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) =>
@@ -101,10 +100,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ============================
-// BANCO DE DADOS
+// BANCO DE DADOS (mysql2/promise)
 // ============================
 let db;
-
 (async () => {
   try {
     db = await mysql.createPool({
@@ -115,11 +113,10 @@ let db;
       port: process.env.DB_PORT,
       waitForConnections: true,
       connectionLimit: 10,
-      queueLimit: 0
+      queueLimit: 0,
     });
 
     console.log("✅ Conectado ao MySQL (Railway)");
-
   } catch (err) {
     console.error("❌ Erro ao conectar ao MySQL:", err);
   }
@@ -151,19 +148,17 @@ app.post("/api/cadastro", async (req, res) => {
         .json({ success: false, message: "Nome, email e senha são obrigatórios" });
     }
 
-    const [exist] = await db
-      .promise()
-      .query("SELECT id FROM Usuarios WHERE email = ?", [email]);
+    // usar db.query diretamente (promise)
+    const [exist] = await db.query("SELECT id FROM Usuarios WHERE email = ?", [email]);
     if (exist.length > 0) {
       return res
         .status(409)
         .json({ success: false, message: "Email já cadastrado" });
     }
 
-    const usuarioIdCustom = "USR-" + crypto.randomBytes(3).toString("hex").toUpperCase();
-    const enderecoCompleto = `${cidade || ""}${
-      cidade && estado ? ", " : ""
-    }${estado || ""}`;
+    const usuarioIdCustom =
+      "USR-" + crypto.randomBytes(3).toString("hex").toUpperCase();
+    const enderecoCompleto = `${cidade || ""}${cidade && estado ? ", " : ""}${estado || ""}`;
 
     const senhaHash = hashPasswordPBKDF2(senha);
 
@@ -183,7 +178,7 @@ app.post("/api/cadastro", async (req, res) => {
       cidade || null,
     ];
 
-    const [result] = await db.promise().query(insertSql, valores);
+    const [result] = await db.query(insertSql, valores);
 
     console.log("✅ Usuário cadastrado com ID:", result.insertId);
 
@@ -201,12 +196,12 @@ app.post("/api/cadastro", async (req, res) => {
     console.error("❌ Erro no cadastro:", err);
 
     if (err.code === "ER_DUP_ENTRY") {
-      if (err.sqlMessage.includes("cpf")) {
+      if (err.sqlMessage && err.sqlMessage.includes("cpf")) {
         return res
           .status(409)
           .json({ success: false, message: "CPF já cadastrado" });
       }
-      if (err.sqlMessage.includes("email")) {
+      if (err.sqlMessage && err.sqlMessage.includes("email")) {
         return res
           .status(409)
           .json({ success: false, message: "Email já cadastrado" });
@@ -220,7 +215,7 @@ app.post("/api/cadastro", async (req, res) => {
 // ============================
 // LOGIN
 // ============================
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) {
     return res
@@ -228,15 +223,10 @@ app.post("/api/login", (req, res) => {
       .json({ success: false, message: "Email e senha são obrigatórios" });
   }
 
-  const sql =
-    "SELECT id, nome, email, senha_hash, tipo_usuario FROM Usuarios WHERE email = ?";
-  db.query(sql, [email], async (err, results) => {
-    if (err) {
-      console.error("❌ Erro no login:", err);
-      return res
-        .status(500)
-        .json({ success: false, message: "Erro interno do servidor" });
-    }
+  try {
+    const sql =
+      "SELECT id, nome, email, senha_hash, tipo_usuario FROM Usuarios WHERE email = ?";
+    const [results] = await db.query(sql, [email]);
 
     if (results.length === 0) {
       console.log("❌ Email não encontrado:", email);
@@ -246,47 +236,46 @@ app.post("/api/login", (req, res) => {
     }
 
     const usuario = results[0];
+    const hash = usuario.senha_hash || "";
+    const senhaValida = verifyPassword(senha, hash);
 
-    try {
-      const hash = usuario.senha_hash || "";
-      const senhaValida = verifyPassword(senha, hash);
-
-      if (!senhaValida) {
-        console.log("❌ Senha incorreta para:", email);
-        return res
-          .status(401)
-          .json({ success: false, message: "Email ou senha incorretos" });
-      }
-
-      console.log("✅ Login bem-sucedido para:", usuario.nome);
-
-      res.json({
-        success: true,
-        message: "Login realizado com sucesso!",
-        usuario: {
-          id: usuario.id,
-          nome: usuario.nome,
-          email: usuario.email,
-          tipo_usuario: usuario.tipo_usuario,
-        },
-      });
-    } catch (error) {
-      console.error("❌ Erro ao validar senha:", error);
+    if (!senhaValida) {
+      console.log("❌ Senha incorreta para:", email);
       return res
-        .status(500)
-        .json({ success: false, message: "Erro interno ao validar senha" });
+        .status(401)
+        .json({ success: false, message: "Email ou senha incorretos" });
     }
-  });
+
+    console.log("✅ Login bem-sucedido para:", usuario.nome);
+
+    res.json({
+      success: true,
+      message: "Login realizado com sucesso!",
+      usuario: {
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        tipo_usuario: usuario.tipo_usuario,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Erro no login:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Erro interno do servidor" });
+  }
 });
 
-// === SOLICITAR RECUPERAÇÃO DE SENHA ===
+// ============================
+// RECUPERAÇÃO DE SENHA
+// ============================
 app.post("/api/recuperar-senha", async (req, res) => {
   const { email } = req.body;
 
   if (!email) return res.status(400).json({ success: false, message: "Informe o e-mail" });
 
   try {
-    const [rows] = await db.promise().query("SELECT id, nome FROM Usuarios WHERE email = ?", [email]);
+    const [rows] = await db.query("SELECT id, nome FROM Usuarios WHERE email = ?", [email]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: "E-mail não encontrado" });
     }
@@ -294,12 +283,13 @@ app.post("/api/recuperar-senha", async (req, res) => {
     const token = crypto.randomBytes(20).toString("hex");
     const expires = new Date(Date.now() + 3600000); // 1h
 
-    await db.promise().query(
+    await db.query(
       "UPDATE Usuarios SET reset_token=?, reset_expira=? WHERE email=?",
       [token, expires, email]
     );
 
-    const link = `http://localhost:5500/esqueci-senha.html?token=${token}`;
+    // Ajuste: link para front real - se seu front na Vercel usa rota diferente, atualize aqui
+    const link = `https://e-loop-one.vercel.app/esqueci-senha.html?token=${token}`;
 
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
@@ -307,7 +297,7 @@ app.post("/api/recuperar-senha", async (req, res) => {
       secure: true,
       auth: {
         user: "eloop.suporte@gmail.com",
-        pass: "xjdbbwrvslwnhvtu" // SENHA DO APP
+        pass: "xjdbbwrvslwnhvtu" // ATENÇÃO: mantenha seguro em ENV ao produzir
       }
     });
 
@@ -325,15 +315,12 @@ app.post("/api/recuperar-senha", async (req, res) => {
     });
 
     res.json({ success: true, message: "Link enviado ao e-mail!" });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Erro ao enviar e-mail" });
   }
 });
 
-
-// === FINALIZAR REDEFINIÇÃO DE SENHA ===
 app.post("/api/redefinir-senha", async (req, res) => {
   const { token, novaSenha } = req.body;
 
@@ -342,7 +329,7 @@ app.post("/api/redefinir-senha", async (req, res) => {
   }
 
   try {
-    const [rows] = await db.promise().query(
+    const [rows] = await db.query(
       "SELECT id FROM Usuarios WHERE reset_token=? AND reset_expira > NOW()",
       [token]
     );
@@ -353,7 +340,7 @@ app.post("/api/redefinir-senha", async (req, res) => {
 
     const senhaHash = hashPasswordPBKDF2(novaSenha);
 
-    await db.promise().query(
+    await db.query(
       "UPDATE Usuarios SET senha_hash=?, reset_token=NULL, reset_expira=NULL WHERE reset_token=?",
       [senhaHash, token]
     );
@@ -366,30 +353,25 @@ app.post("/api/redefinir-senha", async (req, res) => {
   }
 });
 
-
-
 // ============================
 // LISTAR USUÁRIOS (DEBUG)
 // ============================
-app.get("/api/usuarios", (req, res) => {
-  db.query(
-    "SELECT id, nome, email, data_cadastro FROM Usuarios ORDER BY id DESC",
-    (err, results) => {
-      if (err) {
-        console.error("❌ Erro ao listar usuários:", err);
-        return res
-          .status(500)
-          .json({ success: false, message: "Erro interno" });
-      }
-      res.json({ success: true, total: results.length, usuarios: results });
-    }
-  );
+app.get("/api/usuarios", async (req, res) => {
+  try {
+    const [results] = await db.query(
+      "SELECT id, nome, email, data_cadastro FROM Usuarios ORDER BY id DESC"
+    );
+    res.json({ success: true, total: results.length, usuarios: results });
+  } catch (err) {
+    console.error("❌ Erro ao listar usuários:", err);
+    res.status(500).json({ success: false, message: "Erro interno" });
+  }
 });
 
 // ============================
 // PERFIL / USUÁRIO POR ID
 // ============================
-app.get("/api/usuario/:id", (req, res) => {
+app.get("/api/usuario/:id", async (req, res) => {
   const userId = parseInt(req.params.id, 10);
   if (isNaN(userId))
     return res
@@ -404,26 +386,24 @@ app.get("/api/usuario/:id", (req, res) => {
     WHERE id = ?
     LIMIT 1
   `;
-  db.query(sql, [userId], (err, results) => {
-    if (err) {
-      console.error("❌ Erro ao buscar usuário:", err);
-      return res
-        .status(500)
-        .json({ success: false, message: "Erro interno" });
-    }
+  try {
+    const [results] = await db.query(sql, [userId]);
     if (results.length === 0)
       return res
         .status(404)
         .json({ success: false, message: "Usuário não encontrado" });
 
     res.json({ success: true, usuario: results[0] });
-  });
+  } catch (err) {
+    console.error("❌ Erro ao buscar usuário:", err);
+    res.status(500).json({ success: false, message: "Erro interno" });
+  }
 });
 
 // ============================
 // ATUALIZAR PERFIL
 // ============================
-app.put("/api/usuario/:id", (req, res) => {
+app.put("/api/usuario/:id", async (req, res) => {
   const userId = req.params.id;
   const { nome, email, telefone, endereco, bio, cidade } = req.body;
 
@@ -432,30 +412,22 @@ app.put("/api/usuario/:id", (req, res) => {
     SET nome = ?, email = ?, telefone = ?, endereco = ?, bio = ?, cidade = ?
     WHERE id = ?
   `;
-
-  db.query(
-    sql,
-    [nome, email, telefone, endereco, bio, cidade, userId],
-    (err, result) => {
-      if (err) {
-        console.error("❌ Erro ao atualizar usuário:", err);
-        return res
-          .status(500)
-          .json({ success: false, message: "Erro ao atualizar perfil." });
-      }
-
-      return res.json({
-        success: true,
-        message: "Perfil atualizado com sucesso!",
-      });
-    }
-  );
+  try {
+    const [result] = await db.query(sql, [nome, email, telefone, endereco, bio, cidade, userId]);
+    res.json({
+      success: true,
+      message: "Perfil atualizado com sucesso!",
+    });
+  } catch (err) {
+    console.error("❌ Erro ao atualizar usuário:", err);
+    res.status(500).json({ success: false, message: "Erro ao atualizar perfil." });
+  }
 });
 
 // ============================
 // CADASTRAR ANÚNCIO
 // ============================
-app.post("/api/anuncios", upload.single("imagem"), (req, res) => {
+app.post("/api/anuncios", upload.single("imagem"), async (req, res) => {
   try {
     console.log("📦 NOVO ANÚNCIO RECEBIDO");
     const {
@@ -504,43 +476,33 @@ app.post("/api/anuncios", upload.single("imagem"), (req, res) => {
       imagemPath,
     ];
 
-    db.query(sql, values, (err, result) => {
-      if (err) {
-        console.error("❌ Erro ao inserir anúncio:", err);
-        return res.status(500).json({
-          success: false,
-          message: "Erro ao cadastrar anúncio",
-          error: err.sqlMessage || err,
-        });
-      }
+    const [result] = await db.query(sql, values);
 
-      console.log("✅ Anúncio cadastrado ID:", result.insertId);
-      res.status(201).json({
-        success: true,
-        message: "Anúncio cadastrado com sucesso!",
-        anuncio: {
-          id: result.insertId,
-          nome_produto,
-          tipo_anuncio,
-          categoria_id,
-          preco,
-          condicao,
-          descricao,
-          usuario_id,
-          imagem: imagemPath,
-        },
-      });
+    console.log("✅ Anúncio cadastrado ID:", result.insertId);
+    res.status(201).json({
+      success: true,
+      message: "Anúncio cadastrado com sucesso!",
+      anuncio: {
+        id: result.insertId,
+        nome_produto,
+        tipo_anuncio,
+        categoria_id,
+        preco,
+        condicao,
+        descricao,
+        usuario_id,
+        imagem: imagemPath,
+      },
     });
   } catch (error) {
     console.error("❌ Erro no endpoint /api/anuncios:", error);
     res.status(500).json({ success: false, message: "Erro interno" });
   }
 });
-
 // ============================
 // LISTAR TODOS OS ANÚNCIOS
 // ============================
-app.get("/api/anuncios", (req, res) => {
+app.get("/api/anuncios", async (req, res) => {
   const sql = `
     SELECT 
       a.*,
@@ -554,26 +516,23 @@ app.get("/api/anuncios", (req, res) => {
     LEFT JOIN Categorias c ON a.categoria_id = c.id
     ORDER BY a.id DESC
   `;
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error("❌ Erro ao buscar anúncios:", err);
-      return res
-        .status(500)
-        .json({ message: "Erro ao buscar anúncios", error: err });
-    }
+  try {
+    const [results] = await db.query(sql);
+    // Para compatibilidade com front antigo que esperava array simples
     res.json(results);
-  });
+  } catch (err) {
+    console.error("❌ Erro ao buscar anúncios:", err);
+    res.status(500).json({ message: "Erro ao buscar anúncios", error: err });
+  }
 });
 
 // ============================
 // ANÚNCIOS POR USUÁRIO
 // ============================
-app.get("/api/anuncios/user/:userId", (req, res) => {
+app.get("/api/anuncios/user/:userId", async (req, res) => {
   const userId = parseInt(req.params.userId, 10);
   if (isNaN(userId))
-    return res
-      .status(400)
-      .json({ success: false, message: "ID inválido" });
+    return res.status(400).json({ success: false, message: "ID inválido" });
 
   const sql = `
     SELECT 
@@ -584,56 +543,42 @@ app.get("/api/anuncios/user/:userId", (req, res) => {
     WHERE a.usuario_id = ?
     ORDER BY a.id DESC
   `;
-  db.query(sql, [userId], (err, results) => {
-    if (err) {
-      console.error("❌ Erro ao buscar anúncios do usuário:", err);
-      return res.status(500).json({
-        message: "Erro ao buscar anúncios do usuário",
-        error: err,
-      });
-    }
+  try {
+    const [results] = await db.query(sql, [userId]);
     res.json(results);
-  });
+  } catch (err) {
+    console.error("❌ Erro ao buscar anúncios do usuário:", err);
+    res.status(500).json({ message: "Erro ao buscar anúncios do usuário", error: err });
+  }
 });
 
 // ============================
 // EDITAR ANÚNCIO
 // ============================
-app.put("/api/anuncios/:id", upload.single("imagem"), (req, res) => {
-  const anuncioId = parseInt(req.params.id, 10);
-  const { nome_produto, preco, condicao, descricao } = req.body;
+app.put("/api/anuncios/:id", upload.single("imagem"), async (req, res) => {
+  try {
+    const anuncioId = parseInt(req.params.id, 10);
+    const { nome_produto, preco, condicao, descricao } = req.body;
 
-  console.log("🔄 Solicitacao de edicao de anuncio:", anuncioId);
+    console.log("🔄 Solicitacao de edicao de anuncio:", anuncioId);
 
-  if (isNaN(anuncioId)) {
-    return res
-      .status(400)
-      .json({ success: false, message: "ID do anúncio inválido" });
-  }
-
-  if (!nome_produto || !preco || !condicao) {
-    return res.status(400).json({
-      success: false,
-      message: "Nome, preço e condição são obrigatórios",
-    });
-  }
-
-  const checkSql = "SELECT id FROM Anuncio WHERE id = ?";
-  db.query(checkSql, [anuncioId], (err, results) => {
-    if (err) {
-      console.error("❌ Erro ao verificar anúncio:", err);
-      return res
-        .status(500)
-        .json({ success: false, message: "Erro interno do servidor" });
-    }
-    if (results.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Anúncio não encontrado" });
+    if (isNaN(anuncioId)) {
+      return res.status(400).json({ success: false, message: "ID do anúncio inválido" });
     }
 
-    let updateSql =
-      "UPDATE Anuncio SET nome_produto = ?, preco = ?, condicao = ?, descricao = ?";
+    if (!nome_produto || !preco || !condicao) {
+      return res.status(400).json({
+        success: false,
+        message: "Nome, preço e condição são obrigatórios",
+      });
+    }
+
+    const [exists] = await db.query("SELECT id FROM Anuncio WHERE id = ?", [anuncioId]);
+    if (exists.length === 0) {
+      return res.status(404).json({ success: false, message: "Anúncio não encontrado" });
+    }
+
+    let updateSql = "UPDATE Anuncio SET nome_produto = ?, preco = ?, condicao = ?, descricao = ?";
     const values = [nome_produto, parseFloat(preco), condicao, descricao || ""];
 
     if (req.file) {
@@ -645,69 +590,52 @@ app.put("/api/anuncios/:id", upload.single("imagem"), (req, res) => {
     updateSql += " WHERE id = ?";
     values.push(anuncioId);
 
-    db.query(updateSql, values, (err2) => {
-      if (err2) {
-        console.error("❌ Erro ao atualizar anúncio:", err2);
-        return res.status(500).json({
-          success: false,
-          message: "Erro ao atualizar anúncio",
-          error: err2.sqlMessage || err2,
-        });
-      }
+    await db.query(updateSql, values);
 
-      db.query(
-        `
-        SELECT 
-          a.*,
-          u.nome AS vendedor_nome,
-          u.telefone AS vendedor_telefone
-        FROM Anuncio a
-        LEFT JOIN Usuarios u ON a.usuario_id = u.id
-        WHERE a.id = ?
-      `,
-        [anuncioId],
-        (err3, rows) => {
-          if (err3) {
-            console.error("❌ Erro ao buscar anuncio atualizado:", err3);
-            return res.status(500).json({
-              success: false,
-              message: "Erro após atualização",
-            });
-          }
-          return res.json({
-            success: true,
-            message: "Anúncio atualizado com sucesso!",
-            anuncio: rows[0],
-          });
-        }
-      );
+    const [rows] = await db.query(
+      `
+      SELECT 
+        a.*,
+        u.nome AS vendedor_nome,
+        u.telefone AS vendedor_telefone
+      FROM Anuncio a
+      LEFT JOIN Usuarios u ON a.usuario_id = u.id
+      WHERE a.id = ?
+    `, [anuncioId]
+    );
+
+    return res.json({
+      success: true,
+      message: "Anúncio atualizado com sucesso!",
+      anuncio: rows[0],
     });
-  });
+  } catch (err) {
+    console.error("❌ Erro ao atualizar anúncio:", err);
+    res.status(500).json({ success: false, message: "Erro ao atualizar anúncio", error: err });
+  }
 });
 
 // ============================
 // DELETAR ANÚNCIO
 // ============================
-app.delete("/api/anuncios/:id", (req, res) => {
-  const { id } = req.params;
-  const sql = `DELETE FROM Anuncio WHERE id = ?`;
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error("❌ Erro ao deletar anúncio:", err);
-      return res
-        .status(500)
-        .json({ message: "Erro ao deletar anúncio", error: err });
-    }
+app.delete("/api/anuncios/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const sql = `DELETE FROM Anuncio WHERE id = ?`;
+    const [result] = await db.query(sql, [id]);
     if (result.affectedRows === 0)
       return res.status(404).json({ message: "Anúncio não encontrado" });
     res.status(204).send();
-  });
+  } catch (err) {
+    console.error("❌ Erro ao deletar anúncio:", err);
+    res.status(500).json({ message: "Erro ao deletar anúncio", error: err });
+  }
 });
 
 // ============================
 // DETALHES DO ANÚNCIO POR ID
 // ============================
-app.get("/api/anuncios/:id", (req, res) => {
+app.get("/api/anuncios/:id", async (req, res) => {
   const anuncioId = parseInt(req.params.id, 10);
   if (isNaN(anuncioId) || anuncioId <= 0) {
     return res.status(400).json({
@@ -722,7 +650,7 @@ app.get("/api/anuncios/:id", (req, res) => {
       a.*,
       u.nome AS vendedor_nome,
       u.telefone AS vendedor_telefone,
-      u.email AS vendedor_email,           -- 👈 AQUI
+      u.email AS vendedor_email,
       u.cidade AS vendedor_cidade,
       u.endereco AS vendedor_endereco
     FROM Anuncio a
@@ -731,15 +659,8 @@ app.get("/api/anuncios/:id", (req, res) => {
     LIMIT 1
   `;
 
-  db.query(sql, [anuncioId], (err, results) => {
-    if (err) {
-      console.error("❌ Erro no banco de dados:", err);
-      return res.status(500).json({
-        success: false,
-        message: "Erro interno ao buscar anúncio",
-        anuncio: null,
-      });
-    }
+  try {
+    const [results] = await db.query(sql, [anuncioId]);
     if (results.length === 0) {
       return res.status(404).json({
         success: false,
@@ -753,10 +674,15 @@ app.get("/api/anuncios/:id", (req, res) => {
       message: "Anúncio encontrado com sucesso",
       anuncio: results[0],
     });
-  });
+  } catch (err) {
+    console.error("❌ Erro no banco de dados:", err);
+    res.status(500).json({
+      success: false,
+      message: "Erro interno ao buscar anúncio",
+      anuncio: null,
+    });
+  }
 });
-
-
 // ============================
 // ANÚNCIOS POR CATEGORIA
 // ============================
@@ -765,10 +691,8 @@ app.get("/api/anuncios/categoria/:categoriaId", async (req, res) => {
     const { categoriaId } = req.params;
     console.log(`📂 Buscando anúncios por categoria: ${categoriaId}`);
 
-    const [anuncios] = await db
-      .promise()
-      .query(
-        `
+    const [anuncios] = await db.query(
+      `
       SELECT 
         a.*,
         u.nome AS vendedor_nome,
@@ -780,8 +704,8 @@ app.get("/api/anuncios/categoria/:categoriaId", async (req, res) => {
       WHERE a.categoria_id = ?
       ORDER BY a.id DESC
     `,
-        [categoriaId]
-      );
+      [categoriaId]
+    );
 
     res.json({
       success: true,
@@ -803,7 +727,7 @@ app.get("/api/anuncios/categoria/:categoriaId", async (req, res) => {
 // ============================
 app.get("/api/explorar/anuncios", async (req, res) => {
   try {
-    const [anuncios] = await db.promise().query(`
+    const [anuncios] = await db.query(`
       SELECT 
         a.*,
         u.nome as vendedor_nome,
@@ -860,12 +784,10 @@ app.post("/api/avaliacao", async (req, res) => {
       });
     }
 
-    const [existEval] = await db
-      .promise()
-      .query(
-        "SELECT id FROM Avaliacoes WHERE avaliador_id = ? AND avaliado_id = ?",
-        [avaliador_id, avaliado_id]
-      );
+    const [existEval] = await db.query(
+      "SELECT id FROM Avaliacoes WHERE avaliador_id = ? AND avaliado_id = ?",
+      [avaliador_id, avaliado_id]
+    );
 
     if (existEval.length > 0) {
       return res.status(409).json({
@@ -874,15 +796,13 @@ app.post("/api/avaliacao", async (req, res) => {
       });
     }
 
-    await db
-      .promise()
-      .query(
-        `
+    await db.query(
+      `
         INSERT INTO Avaliacoes (avaliador_id, avaliado_id, nota, comentario)
         VALUES (?, ?, ?, ?)
       `,
-        [avaliador_id, avaliado_id, n, comentario || null]
-      );
+      [avaliador_id, avaliado_id, n, comentario || null]
+    );
 
     return res.json({
       success: true,
@@ -897,28 +817,23 @@ app.post("/api/avaliacao", async (req, res) => {
   }
 });
 
-// listar avaliações de um vendedor
 app.get("/api/avaliacao/:idVendedor", async (req, res) => {
   try {
     const idVendedor = parseInt(req.params.idVendedor, 10);
     if (isNaN(idVendedor)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "ID de vendedor inválido" });
+      return res.status(400).json({ success: false, message: "ID de vendedor inválido" });
     }
 
-    const [rows] = await db
-      .promise()
-      .query(
-        `
+    const [rows] = await db.query(
+      `
         SELECT A.nota, A.comentario, A.data_avaliacao, U.nome AS avaliador
         FROM Avaliacoes A
         INNER JOIN Usuarios U ON U.id = A.avaliador_id
         WHERE A.avaliado_id = ?
         ORDER BY A.data_avaliacao DESC
       `,
-        [idVendedor]
-      );
+      [idVendedor]
+    );
 
     const total = rows.length;
     const media =
@@ -941,8 +856,9 @@ app.get("/api/avaliacao/:idVendedor", async (req, res) => {
   }
 });
 
-// alias plural
+// alias plural (mantido)
 app.get("/api/avaliacoes/:idVendedor", (req, res) => {
+  // redireciona para a rota singular sem re-registrar handlers
   req.url = req.url.replace("/avaliacoes/", "/avaliacao/");
   app._router.handle(req, res);
 });
@@ -950,8 +866,6 @@ app.get("/api/avaliacoes/:idVendedor", (req, res) => {
 // ============================
 // FAVORITOS
 // ============================
-
-// ➕ ADICIONAR FAVORITO
 app.post("/api/favoritos/add", async (req, res) => {
   const { usuario_id, anuncio_id } = req.body;
 
@@ -960,7 +874,7 @@ app.post("/api/favoritos/add", async (req, res) => {
   }
 
   try {
-    await db.promise().query(
+    await db.query(
       "INSERT IGNORE INTO Favoritos (idUsuario, idAnuncio) VALUES (?, ?)",
       [usuario_id, anuncio_id]
     );
@@ -971,12 +885,11 @@ app.post("/api/favoritos/add", async (req, res) => {
   }
 });
 
-// ❌ REMOVER FAVORITO
 app.post("/api/favoritos/remove", async (req, res) => {
   const { usuario_id, anuncio_id } = req.body;
 
   try {
-    await db.promise().query(
+    await db.query(
       "DELETE FROM Favoritos WHERE idUsuario = ? AND idAnuncio = ?",
       [usuario_id, anuncio_id]
     );
@@ -987,18 +900,16 @@ app.post("/api/favoritos/remove", async (req, res) => {
   }
 });
 
-// 📌 LISTAR FAVORITOS DO USUÁRIO (RETORNA IDs)
 app.get("/api/favoritos/:usuarioId", async (req, res) => {
   try {
-    const usuarioId = parseInt(req.params.usuarioId);
+    const usuarioId = parseInt(req.params.usuarioId, 10);
 
-    const [rows] = await db.promise().query(`
-      SELECT idAnuncio AS idAnuncio
-      FROM Favoritos WHERE idUsuario = ?
-    `, [usuarioId]);
+    const [rows] = await db.query(
+      `SELECT idAnuncio AS idAnuncio FROM Favoritos WHERE idUsuario = ?`,
+      [usuarioId]
+    );
 
     res.json({ success: true, favoritos: rows });
-
   } catch (error) {
     console.error("❌ ERRO AO BUSCAR FAVORITOS:", error);
     res.status(500).json({ success: false, message: "Erro ao buscar favoritos" });
@@ -1006,23 +917,19 @@ app.get("/api/favoritos/:usuarioId", async (req, res) => {
 });
 
 // ============================
-// CARRINHO (SALVA JSON NO MYSQL)
+// CARRINHO (JSON no MySQL)
 // ============================
 
-/// Buscar carrinho do usuário
 app.get("/api/carrinho/:usuarioId", async (req, res) => {
   try {
-    const usuarioId = parseInt(req.params.usuarioId);
+    const usuarioId = parseInt(req.params.usuarioId, 10);
 
-    const [rows] = await db
-      .promise()
-      .query("SELECT itens FROM Carrinho WHERE usuario_id = ?", [usuarioId]);
+    const [rows] = await db.query("SELECT itens FROM Carrinho WHERE usuario_id = ?", [usuarioId]);
 
     if (rows.length === 0) return res.json({ itens: [] });
 
     let itens = rows[0].itens;
 
-    // 🔧 CORREÇÃO: Só dá JSON.parse se for string
     try {
       if (typeof itens === "string") itens = JSON.parse(itens);
     } catch {
@@ -1030,55 +937,42 @@ app.get("/api/carrinho/:usuarioId", async (req, res) => {
     }
 
     return res.json({ itens });
-
   } catch (error) {
     console.error("❌ Erro ao buscar carrinho:", error);
     res.status(500).json({ success: false, message: "Erro ao buscar carrinho" });
   }
 });
 
-
-// Salvar/atualizar carrinho
 app.put("/api/carrinho/:usuarioId", async (req, res) => {
   try {
-    const usuarioId = parseInt(req.params.usuarioId);
+    const usuarioId = parseInt(req.params.usuarioId, 10);
     const itens = req.body.itens || [];
 
-    const [rows] = await db
-      .promise()
-      .query("SELECT id FROM Carrinho WHERE usuario_id = ?", [usuarioId]);
+    const [rows] = await db.query("SELECT id FROM Carrinho WHERE usuario_id = ?", [usuarioId]);
 
     if (rows.length === 0) {
-      await db
-        .promise()
-        .query("INSERT INTO Carrinho (usuario_id, itens) VALUES (?, ?)", [
-          usuarioId,
-          JSON.stringify(itens)
-        ]);
+      await db.query("INSERT INTO Carrinho (usuario_id, itens) VALUES (?, ?)", [
+        usuarioId,
+        JSON.stringify(itens),
+      ]);
     } else {
-      await db
-        .promise()
-        .query("UPDATE Carrinho SET itens = ? WHERE usuario_id = ?", [
-          JSON.stringify(itens),
-          usuarioId
-        ]);
+      await db.query("UPDATE Carrinho SET itens = ? WHERE usuario_id = ?", [
+        JSON.stringify(itens),
+        usuarioId,
+      ]);
     }
 
     res.json({ success: true, message: "Carrinho salvo!" });
-
   } catch (error) {
     console.error("❌ Erro ao salvar carrinho:", error);
     res.status(500).json({ success: false, message: "Erro ao salvar carrinho" });
   }
 });
 
-// Limpar carrinho
 app.delete("/api/carrinho/:usuarioId", async (req, res) => {
   try {
-    const usuarioId = parseInt(req.params.usuarioId);
-    await db
-      .promise()
-      .query("DELETE FROM Carrinho WHERE usuario_id = ?", [usuarioId]);
+    const usuarioId = parseInt(req.params.usuarioId, 10);
+    await db.query("DELETE FROM Carrinho WHERE usuario_id = ?", [usuarioId]);
     res.json({ success: true, message: "Carrinho apagado!" });
   } catch (error) {
     console.error("❌ Erro ao limpar carrinho:", error);
@@ -1086,11 +980,8 @@ app.delete("/api/carrinho/:usuarioId", async (req, res) => {
   }
 });
 
-
 // ============================
 // INICIAR SERVIDOR
 // ============================
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () =>
-  console.log(`🚀 Servidor rodando na porta ${PORT}`)
-);
+app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
